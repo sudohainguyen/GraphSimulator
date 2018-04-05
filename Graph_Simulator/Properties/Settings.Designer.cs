@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GraphSimulator.Properties
+namespace Graph_Simulator.Properties
 {
 
 
