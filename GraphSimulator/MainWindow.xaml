@@ -4,13 +4,37 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraphSimulator"
+        xmlns:usercontrol="clr-namespace:GraphSimulator.User_Controls"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Canvas Background="LightGray" 
-                Name="GraphContainer"
-                MouseDown="GraphContainer_MouseDown">
+        <!--<TabControl>
+            <TabItem Header="Create graph"></TabItem>
+            <TabItem Header="Run a"></TabItem>
+        </TabControl>-->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+            <Button Click="Button_Click">Change color</Button>
+        </StackPanel>
+        <!--<usercontrol:DropableCanvas Background="LightGray" 
+                                    Grid.Column="1"
+                                    x:Name="GraphContainer"
+                                    Panel.ZIndex="-999"
+                                    Focusable="True"
+                                    KeyDown="GraphContainer_KeyDown"
+                                    MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
             
+        </usercontrol:DropableCanvas>-->
+        <Canvas Background="LightGray"
+                Grid.Column="1"
+                x:Name="GraphContainer"
+                Panel.ZIndex="-999"
+                Focusable="True"
+                KeyDown="GraphContainer_KeyDown"
+                MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
         </Canvas>
     </Grid>
 </Window>
