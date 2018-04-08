@@ -5,10 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GraphSimulator.User_Controls"
              mc:Ignorable="d"
-             Height="Auto" Width="Auto">
+             Height="Auto" Width="Auto"
+             MouseRightButtonDown="Node_MouseRightButtonDown"
+             MouseRightButtonUp="Node_MouseRightButtonUp"
+             MouseMove="Node_MouseMove">
     <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:Node}}}"
           Height="{Binding Diameter}"
-          MouseDown="Grid_MouseDown"
+          MouseLeftButtonDown="Node_MouseLeftButtonDown"
           Cursor="Hand">
         <Grid.Background>
             <VisualBrush>
