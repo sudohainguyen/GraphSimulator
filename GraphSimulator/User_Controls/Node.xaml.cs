@@ -12,65 +12,100 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Runtime.CompilerServices;
+using System.ComponentModel;
 
 namespace GraphSimulator.User_Controls
 {
     /// <summary>
     /// Interaction logic for Node.xaml
     /// </summary>
-    public partial class Node : UserControl
+    public partial class Node : UserControl, INotifyPropertyChanged
     {
+        private static Brush UNSELECTED_FILL_BRUSH = new SolidColorBrush(Color.FromRgb(152, 198, 234));
+        private static Brush SELECTED_FILL_BRUSH = new SolidColorBrush(Color.FromRgb(193, 87, 87));
+        private static Brush UNSELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(0, 101, 189));
+        private static Brush SELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+        private static Brush UNSELECTED_IDENTIFIER_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+        private static Brush SELECTED_IDENTIFIER_BRUSH = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+
+        private bool _isSelected = false;
+        private Brush _fillBrush = UNSELECTED_FILL_BRUSH;
+        private Brush _strokeBrush = UNSELECTED_STROKE_BRUSH;
+        private Brush _identifierBrush = UNSELECTED_IDENTIFIER_BRUSH;
+
         public double X { get; set; }
         public double Y { get; set; }
-        public bool IsSelected { get; set; }
-        
-        public char Identifier
+        public bool IsSelected
         {
-            get { return (char)GetValue(IdentifierProperty); }
-            set { SetValue(IdentifierProperty, value); }
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                FillBrush = _isSelected
+                    ? SELECTED_FILL_BRUSH
+                    : UNSELECTED_FILL_BRUSH;
+                StrokeBrush = _isSelected
+                    ? SELECTED_STROKE_BRUSH
+                    : UNSELECTED_STROKE_BRUSH;
+                IdentifierBrush = _isSelected
+                    ? SELECTED_IDENTIFIER_BRUSH
+                    : UNSELECTED_IDENTIFIER_BRUSH;
+                OnPropertyChanged(nameof(IsSelected));
+            }
         }
 
-        // Using a DependencyProperty as the backing store for Identifier.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IdentifierProperty =
-            DependencyProperty.Register("Identifier", typeof(char), typeof(Node), new PropertyMetadata('A'));
-
+        public char Identifier { get; set; } = 'A';
 
         public Brush FillBrush
         {
-            get { return (Brush)GetValue(FillBrushProperty); }
-            set { SetValue(FillBrushProperty, value); }
+            get =>_fillBrush;
+            private set
+            {
+                _fillBrush = value;
+                OnPropertyChanged(nameof(FillBrush));
+            }
         }
 
-        // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty FillBrushProperty =
-            DependencyProperty.Register("FillBrush", typeof(Brush), typeof(Node), new PropertyMetadata(new SolidColorBrush(Color.FromRgb(50, 106, 169))));
-
-        // r 193, g 87, b 87
-                    
-        public int Diameter
-        {
-            get { return (int)GetValue(DiameterProperty); }
-            set { SetValue(DiameterProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Radius.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty DiameterProperty =
-            DependencyProperty.Register("Diameter", typeof(int), typeof(Node), new PropertyMetadata(40));
-
+        public int Diameter => 40;
 
         public Brush StrokeBrush
         {
-            get { return (Brush)GetValue(StrokeBrushProperty); }
-            set { SetValue(StrokeBrushProperty, value); }
+            get => _strokeBrush;
+            private set
+            {
+                _strokeBrush = value;
+                OnPropertyChanged(nameof(StrokeBrush));
+            }
         }
-
-        // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty StrokeBrushProperty =
-            DependencyProperty.Register("StrokeBrush", typeof(Brush), typeof(Node), new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0, 0, 0))));
+        
+        public Brush IdentifierBrush
+        {
+            get => _identifierBrush;
+            private set
+            {
+                _identifierBrush = value;
+                OnPropertyChanged(nameof(IdentifierBrush));
+            }
+        }
 
         public Node()
         {
             InitializeComponent();
+        }
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                IsSelected = !IsSelected;
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

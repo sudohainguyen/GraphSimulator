@@ -8,19 +8,21 @@
              Height="Auto" Width="Auto">
     <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:Node}}}"
           Height="{Binding Diameter}"
+          MouseDown="Grid_MouseDown"
           Cursor="Hand">
         <Grid.Background>
             <VisualBrush>
                 <VisualBrush.Visual>
                     <Ellipse Height="{Binding Diameter}"
                              Width="{Binding Diameter}"
-                             Fill="{Binding FillBrush}"
-                             Stroke="{Binding StrokeBrush}"/>
+                             Fill="{Binding FillBrush, UpdateSourceTrigger=PropertyChanged}"
+                             Stroke="{Binding StrokeBrush}"
+                             StrokeThickness="2"/>
                 </VisualBrush.Visual>
             </VisualBrush>
         </Grid.Background>
         <TextBlock Text="{Binding Identifier}" 
-                   Foreground="White"
+                   Foreground="{Binding IdentifierBrush}"
                    FontSize="14"
                    FontWeight="DemiBold"
                    TextAlignment="Center"
