@@ -38,8 +38,7 @@ namespace GraphSimulator.User_Controls
 
         public double X { get; set; }
         public double Y { get; set; }
-        //public double CanvasLeft => X - Diameter / 2;
-        //public double CanvasTop => Y - Diameter / 2;
+
         public bool IsSelected
         {
             get => _isSelected;
@@ -72,7 +71,7 @@ namespace GraphSimulator.User_Controls
         }
 
         public static int Diameter => 40;
-
+        public static int Radius => Diameter / 2;
         public Brush StrokeBrush
         {
             get => _strokeBrush;
@@ -114,7 +113,15 @@ namespace GraphSimulator.User_Controls
 
             if (_inDrag)
             {
-                var curPoint = e.GetPosition(this.Parent as Panel);
+                var parent = this.Parent as Panel;
+                var curPoint = e.GetPosition(parent);
+
+                if (curPoint.X < Radius) curPoint.X = Radius;
+                else if (curPoint.X > parent.ActualWidth - Radius) curPoint.X = parent.ActualWidth - Radius;
+
+                if (curPoint.Y < Radius) curPoint.Y = Radius;
+                else if (curPoint.Y > parent.ActualHeight - Radius) curPoint.Y = parent.ActualHeight - Radius;
+
                 Canvas.SetLeft(this, Canvas.GetLeft(this) + (curPoint.X - _anchorPoint.X));
                 Canvas.SetTop(this, Canvas.GetTop(this) + (curPoint.Y - _anchorPoint.Y));
                 _anchorPoint = curPoint;

@@ -54,6 +54,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\Operation.cs" />
+    <Compile Include="Helpers\RouteEngine.cs" />
+    <Compile Include="User_Controls\Connection.cs" />
     <Compile Include="User_Controls\Node.xaml.cs">
       <DependentUpon>Node.xaml</DependentUpon>
     </Compile>

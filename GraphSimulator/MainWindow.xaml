@@ -8,17 +8,48 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <!--<TabControl>
-            <TabItem Header="Create graph"></TabItem>
-            <TabItem Header="Run a"></TabItem>
-        </TabControl>-->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="4*"/>
-        </Grid.ColumnDefinitions>
-        <StackPanel>
-            <Button Click="Button_Click">Change color</Button>
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="4*"/>
+        </Grid.RowDefinitions>
+        <TabControl Grid.Row="0">
+            <TabItem Header="Create graph">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="4*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                </Grid>
+            </TabItem>
+            <TabItem Header="Run algorithms">
+                
+            </TabItem>
+        </TabControl>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <Button Click="Button_Click">Change color</Button>
+                <ToggleButton Name="ButtonAddConn"
+                          Checked="ButtonAddConn_Checked"
+                          Unchecked="ButtonAddConn_Unchecked">Add connection</ToggleButton>
+            </StackPanel>
+            <Canvas Background="LightGray"
+                        Grid.Column="1"
+                        x:Name="GraphContainer"
+                        Panel.ZIndex="-999"
+                        Focusable="True"
+                        KeyDown="GraphContainer_KeyDown"
+                        MouseMove="GraphContainer_MouseMove"
+                        MouseLeftButtonUp="GraphContainer_MouseLeftButtonUp"
+                        MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
+                <usercontrol:Connection ></usercontrol:Connection>
+            </Canvas>
+        </Grid>
+
         <!--<usercontrol:DropableCanvas Background="LightGray" 
                                     Grid.Column="1"
                                     x:Name="GraphContainer"
@@ -28,13 +59,6 @@
                                     MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
             
         </usercontrol:DropableCanvas>-->
-        <Canvas Background="LightGray"
-                Grid.Column="1"
-                x:Name="GraphContainer"
-                Panel.ZIndex="-999"
-                Focusable="True"
-                KeyDown="GraphContainer_KeyDown"
-                MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
-        </Canvas>
+        
     </Grid>
 </Window>

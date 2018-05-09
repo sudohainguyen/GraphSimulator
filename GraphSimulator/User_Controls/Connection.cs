@@ -19,18 +19,18 @@ namespace GraphSimulator.User_Controls
         private static Brush UNSELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
 
 
-        private Point _destinationPoint;
+        private Node _destinationPoint = new Node { X = 100, Y = 200 };
         private bool _isSelected;
 
         public bool IsDirected { get; set; } = true;
-        public Point StartPoint { get; set; }
-        public Point DestinationPoint
+        public Node StartNode { get; set; } = new Node { X = 50, Y = 50 };
+        public Node DestinationNode
         {
             get => _destinationPoint;
             set
             {
                 _destinationPoint = value;
-                OnPropertyChanged(nameof(DestinationPoint));
+                OnPropertyChanged(nameof(DestinationNode));
             }
         }
 
@@ -47,21 +47,40 @@ namespace GraphSimulator.User_Controls
             }
         }
 
-        protected override Geometry DefiningGeometry => throw new NotImplementedException();
+        protected override Geometry DefiningGeometry
+        {
+            get
+            {
+                var geometry = new StreamGeometry
+                {
+                    FillRule = FillRule.EvenOdd
+                };
+
+                using (var context = geometry.Open())
+                {
+                    InternalDrawArrowGeometry(context);
+                }
+
+                // Freeze the geometry for performance benefits
+                geometry.Freeze();
+
+                return geometry;
+            }
+        }
 
         private void InternalDrawArrowGeometry(StreamGeometryContext context)
         {
-            var X1 = StartPoint.X;
-            var Y1 = StartPoint.Y;
-            var X2 = DestinationPoint.X;
-            var Y2 = DestinationPoint.Y;
+            var X1 = StartNode.X;
+            var Y1 = StartNode.Y;
+            var X2 = DestinationNode.X;
+            var Y2 = DestinationNode.Y;
 
             var alpha = Math.Atan2(Y2 - Y1, X2 - X1);
             var sin_a = Math.Sin(alpha);
             var cos_a = Math.Cos(alpha);
 
-            X2 -= Node.Diameter * cos_a;
-            Y2 -= Node.Diameter * sin_a;
+            X2 -= Node.Radius * cos_a;
+            Y2 -= Node.Radius * sin_a;
 
             var pt1 = new Point(X1, Y1);
             var pt2 = new Point(X2, Y2);
