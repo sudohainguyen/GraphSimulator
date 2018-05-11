@@ -43,22 +43,9 @@
                         Panel.ZIndex="-999"
                         Focusable="True"
                         KeyDown="GraphContainer_KeyDown"
-                        MouseMove="GraphContainer_MouseMove"
-                        MouseLeftButtonUp="GraphContainer_MouseLeftButtonUp"
                         MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
-                <usercontrol:Connection ></usercontrol:Connection>
+                <usercontrol:Connection X1="10" Y1="200" Stroke="Black" />
             </Canvas>
         </Grid>
-
-        <!--<usercontrol:DropableCanvas Background="LightGray" 
-                                    Grid.Column="1"
-                                    x:Name="GraphContainer"
-                                    Panel.ZIndex="-999"
-                                    Focusable="True"
-                                    KeyDown="GraphContainer_KeyDown"
-                                    MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
-            
-        </usercontrol:DropableCanvas>-->
-        
     </Grid>
 </Window>

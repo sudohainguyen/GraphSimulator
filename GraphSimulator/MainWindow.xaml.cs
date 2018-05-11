@@ -25,7 +25,7 @@ namespace GraphSimulator
     public partial class MainWindow : Window
     {
         private bool _isCreatingConnection = false;
-        private Node _startNode;
+        private Node _startNode, _destNode;
         private Connection _newConnection;
         private Stack<(Operation operation, IEnumerable<UIElement> controls)> _operationStack = new Stack<(Operation, IEnumerable<UIElement>)>();
         public MainWindow()
@@ -38,19 +38,65 @@ namespace GraphSimulator
         {
             var newPos = e.GetPosition(GraphContainer);
 
-            if (IsOverlapExistedNode(newPos))
-                return;
-
-            var node = new Node
+            if (!_isCreatingConnection)
             {
-                X = e.GetPosition(GraphContainer).X,
-                Y = e.GetPosition(GraphContainer).Y
-            };
-            Canvas.SetLeft(node, node.X - Node.Radius);
-            Canvas.SetTop(node, node.Y - Node.Radius);
+                if (IsOverlapExistedNode(newPos))
+                    return;
 
-            GraphContainer.Children.Add(node);
-            _operationStack.Push((Operation.ADD, new List<UIElement>() { node }));
+
+                var node = new Node
+                {
+                    X = e.GetPosition(GraphContainer).X,
+                    Y = e.GetPosition(GraphContainer).Y
+                };
+                Canvas.SetLeft(node, node.X - Node.Radius);
+                Canvas.SetTop(node, node.Y - Node.Radius);
+
+                GraphContainer.Children.Add(node);
+                _operationStack.Push((Operation.ADD, new List<UIElement>() { node }));
+            }
+            else
+            {
+                if (!GetNodeAtCurrentClickPosition(newPos, out var curNode) && _startNode is null)
+                    return;
+                
+                if (_startNode is null)
+                    _startNode = curNode;
+                else 
+                {
+                    if (curNode is null)
+                    {
+                        curNode = new Node
+                        {
+                            X = e.GetPosition(GraphContainer).X,
+                            Y = e.GetPosition(GraphContainer).Y
+                        };
+                        Canvas.SetLeft(curNode, curNode.X - Node.Radius);
+                        Canvas.SetTop(curNode, curNode.Y - Node.Radius);
+                        GraphContainer.Children.Add(curNode);
+                        _operationStack.Push((Operation.ADD, new List<UIElement>() { curNode }));
+                    }
+                    _destNode = curNode;
+
+                    var actualDest = Helper.CalActualPointForNewConnection(_startNode.Centre, _destNode.Centre);
+
+                    var newCon = new Connection()
+                    {
+                        X1 = _startNode.X,
+                        Y1 = _startNode.Y,
+                        X2 = actualDest.X,
+                        Y2 = actualDest.Y
+                    };
+                                        
+                    GraphContainer.Children.Add(newCon);
+
+                    Canvas.SetZIndex(newCon, -99);
+
+                    _operationStack.Push((Operation.ADD, new List<UIElement>() { newCon }));
+                    _startNode.IsSelected = _destNode.IsSelected = false;
+                    _startNode = _destNode = null;
+                }
+            }
         }
 
         private bool IsOverlapExistedNode(Point clickPos)
@@ -84,9 +130,9 @@ namespace GraphSimulator
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var node in GraphContainer.Children.Cast<Node>())
+            foreach (var con in GraphContainer.Children.Cast<Connection>())
             {
-                //node.FillBrush = new SolidColorBrush(Color.FromRgb(193, 87, 87));
+                con.IsSelected = true;
             }
         }
 
@@ -126,41 +172,7 @@ namespace GraphSimulator
                 }
             }
         }
-
-        private void GraphContainer_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (_isCreatingConnection)
-            {
-                var curPoint = e.GetPosition(GraphContainer);
-                if (curPoint.X < Node.Radius) curPoint.X = Node.Radius;
-                else if (curPoint.X > GraphContainer.ActualWidth - Node.Radius) curPoint.X = GraphContainer.ActualWidth - Node.Radius;
-
-                if (curPoint.Y < Node.Radius) curPoint.Y = Node.Radius;
-                else if (curPoint.Y > GraphContainer.ActualHeight - Node.Radius) curPoint.Y = GraphContainer.ActualHeight - Node.Radius;
-
-                if (GetNodeAtCurrentClickPosition(curPoint, out var desNode))
-                {
-                    _newConnection.DestinationNode = desNode;
-                }
-                else
-                {
-                    _newConnection.DestinationNode.X = curPoint.X;
-                    _newConnection.DestinationNode.Y = curPoint.Y;
-                }
-            }
-        }
-
-        private void GraphContainer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (_isCreatingConnection)
-            {
-                _isCreatingConnection = false;
-                if (_newConnection is null) return;
-                GraphContainer.Children.Add(_newConnection);
-                _newConnection = null;
-            }
-        }
-
+                
         private void ButtonAddConn_Checked(object sender, RoutedEventArgs e)
         {
             _isCreatingConnection = true;
