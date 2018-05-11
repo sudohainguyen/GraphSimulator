@@ -39,6 +39,8 @@ namespace GraphSimulator.User_Controls
         public double X { get; set; }
         public double Y { get; set; }
 
+        public Point Centre => new Point(X, Y);
+
         public bool IsSelected
         {
             get => _isSelected;
@@ -125,8 +127,8 @@ namespace GraphSimulator.User_Controls
                 Canvas.SetLeft(this, Canvas.GetLeft(this) + (curPoint.X - _anchorPoint.X));
                 Canvas.SetTop(this, Canvas.GetTop(this) + (curPoint.Y - _anchorPoint.Y));
                 _anchorPoint = curPoint;
-                X = _anchorPoint.X;
-                Y = _anchorPoint.Y;
+                X = Canvas.GetLeft(this) + Node.Radius;
+                Y = Canvas.GetTop(this) + Node.Radius;
                 e.Handled = true;
             }
         }
