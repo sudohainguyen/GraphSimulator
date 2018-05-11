@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,108 +9,96 @@ using System.Windows.Shapes;
 
 namespace GraphSimulator.User_Controls
 {
-    public class Connection : Shape, INotifyPropertyChanged
+    public class Connection : ConnectionBase
     {
-        private const double HEAD_WIDTH = 5;
-        private const double HEAD_HEIGHT = 10;
-        private static Brush SELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(183, 61, 61));
-        private static Brush UNSELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+        /// <summary>
+        ///     Identifies the X1 dependency property.
+        /// </summary>
+        public static readonly DependencyProperty X1Property =
+            DependencyProperty.Register("X1",
+                typeof(double), typeof(Connection),
+                new FrameworkPropertyMetadata(0.0,
+                        FrameworkPropertyMetadataOptions.AffectsMeasure));
 
-
-        private Node _destinationPoint = new Node { X = 100, Y = 200 };
-        private bool _isSelected;
-
-        public bool IsDirected { get; set; } = true;
-        public Node StartNode { get; set; } = new Node { X = 50, Y = 50 };
-        public Node DestinationNode
+        /// <summary>
+        ///     Gets or sets the x-coordinate of the ArrowLine start point.
+        /// </summary>
+        public double X1
         {
-            get => _destinationPoint;
-            set
-            {
-                _destinationPoint = value;
-                OnPropertyChanged(nameof(DestinationNode));
-            }
+            set { SetValue(X1Property, value); }
+            get { return (double)GetValue(X1Property); }
         }
 
-        public bool IsSelected
+        /// <summary>
+        ///     Identifies the Y1 dependency property.
+        /// </summary>
+        public static readonly DependencyProperty Y1Property =
+            DependencyProperty.Register("Y1",
+                typeof(double), typeof(Connection),
+                new FrameworkPropertyMetadata(0.0,
+                        FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        /// <summary>
+        ///     Gets or sets the y-coordinate of the ArrowLine start point.
+        /// </summary>
+        public double Y1
         {
-            get => _isSelected;
-            set
-            {
-                _isSelected = value;
-                Stroke = _isSelected
-                    ? SELECTED_STROKE_BRUSH
-                    : UNSELECTED_STROKE_BRUSH;
-                OnPropertyChanged(nameof(IsSelected));
-            }
+            set { SetValue(Y1Property, value); }
+            get { return (double)GetValue(Y1Property); }
+        }
+
+        /// <summary>
+        ///     Identifies the X2 dependency property.
+        /// </summary>
+        public static readonly DependencyProperty X2Property =
+            DependencyProperty.Register("X2",
+                typeof(double), typeof(Connection),
+                new FrameworkPropertyMetadata(100.0,
+                        FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        /// <summary>
+        ///     Gets or sets the x-coordinate of the ArrowLine end point.
+        /// </summary>
+        public double X2
+        {
+            set { SetValue(X2Property, value); }
+            get { return (double)GetValue(X2Property); }
+        }
+
+        /// <summary>
+        ///     Identifies the Y2 dependency property.
+        /// </summary>
+        public static readonly DependencyProperty Y2Property =
+            DependencyProperty.Register("Y2",
+                typeof(double), typeof(Connection),
+                new FrameworkPropertyMetadata(100.0,
+                        FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        /// <summary>
+        ///     Gets or sets the y-coordinate of the ArrowLine end point.
+        /// </summary>
+        public double Y2
+        {
+            set { SetValue(Y2Property, value); }
+            get { return (double)GetValue(Y2Property); }
         }
 
         protected override Geometry DefiningGeometry
         {
             get
             {
-                var geometry = new StreamGeometry
-                {
-                    FillRule = FillRule.EvenOdd
-                };
+                // Clear out the PathGeometry.
+                pathgeo.Figures.Clear();
 
-                using (var context = geometry.Open())
-                {
-                    InternalDrawArrowGeometry(context);
-                }
+                // Define a single PathFigure with the points.
+                pathfigLine.StartPoint = new Point(X1, Y1);
+                polysegLine.Points.Clear();
+                polysegLine.Points.Add(new Point(X2, Y2));
+                pathgeo.Figures.Add(pathfigLine);
 
-                // Freeze the geometry for performance benefits
-                geometry.Freeze();
-
-                return geometry;
+                // Call the base property to add arrows on the ends.
+                return base.DefiningGeometry;
             }
-        }
-
-        private void InternalDrawArrowGeometry(StreamGeometryContext context)
-        {
-            var X1 = StartNode.X;
-            var Y1 = StartNode.Y;
-            var X2 = DestinationNode.X;
-            var Y2 = DestinationNode.Y;
-
-            var alpha = Math.Atan2(Y2 - Y1, X2 - X1);
-            var sin_a = Math.Sin(alpha);
-            var cos_a = Math.Cos(alpha);
-
-            X2 -= Node.Radius * cos_a;
-            Y2 -= Node.Radius * sin_a;
-
-            var pt1 = new Point(X1, Y1);
-            var pt2 = new Point(X2, Y2);
-
-            var pt3 = new Point(
-                X2 - (HEAD_HEIGHT * cos_a - HEAD_WIDTH * sin_a),
-                Y2 - (HEAD_HEIGHT * sin_a + HEAD_WIDTH * cos_a));
-
-            var pt4 = new Point(
-                X2 - (HEAD_HEIGHT * cos_a + HEAD_WIDTH * sin_a),
-                Y2 + (HEAD_WIDTH * cos_a - HEAD_HEIGHT * sin_a));
-
-            context.BeginFigure(pt1, true, false);
-            context.LineTo(pt2, true, true);
-            if (IsDirected)
-            {
-                context.LineTo(pt3, true, true);
-                context.LineTo(pt2, true, true);
-                context.LineTo(pt4, true, true);
-                context.LineTo(pt2, true, true);
-            }
-            else
-            {
-                context.LineTo(pt1, true, true);
-                context.LineTo(pt2, true, true);
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
