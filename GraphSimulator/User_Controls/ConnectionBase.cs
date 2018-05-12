@@ -25,23 +25,40 @@ namespace GraphSimulator.User_Controls
         private static readonly Brush SELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(183, 61, 61));
         private static readonly Brush UNSELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
 
+        public Node StartNode { get; set; }
+        public Node DestNode { get; set; }
+
         public int Cost { get; set; } = 0;
 
-        private bool _isSelected = false;
+        //private bool _isSelected = false;
+
+        //public bool IsSelected
+        //{
+        //    get => _isSelected;
+        //    set
+        //    {
+        //        _isSelected = value;
+        //        Stroke = _isSelected
+        //            ? SELECTED_STROKE_BRUSH
+        //            : UNSELECTED_STROKE_BRUSH;
+        //        OnPropertyChanged(nameof(IsSelected));
+        //    }
+        //}
+
+
 
         public bool IsSelected
         {
-            get => _isSelected;
-            set
-            {
-                _isSelected = value;
-                Stroke = _isSelected
-                    ? SELECTED_STROKE_BRUSH
-                    : UNSELECTED_STROKE_BRUSH;
-                OnPropertyChanged(nameof(IsSelected));
-            }
+            get { return (bool)GetValue(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsSelectedProperty =
+            DependencyProperty.Register("IsSelected", typeof(bool), typeof(ConnectionBase),
+                new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        
         /// <summary>
         ///     Identifies the ArrowAngle dependency property.
         /// </summary>
@@ -118,9 +135,6 @@ namespace GraphSimulator.User_Controls
 
         public ConnectionBase()
         {
-            StrokeThickness = 2.5;
-            Stroke = UNSELECTED_STROKE_BRUSH;
-
             pathgeo = new PathGeometry();
 
             pathfigLine = new PathFigure();
