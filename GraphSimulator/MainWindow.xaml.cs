@@ -25,8 +25,10 @@ namespace GraphSimulator
     public partial class MainWindow : Window
     {
         private bool _isCreatingConnection = false;
-        private Node _startNode, _destNode;
+        private bool _isDirectedGraph = false;
+        private int _numberOfNode = 0;
         private Connection _newConnection;
+        private Node _startNode, _destNode;
         private Stack<(Operation operation, IEnumerable<UIElement> controls)> _operationStack = new Stack<(Operation, IEnumerable<UIElement>)>();
         public MainWindow()
         {
@@ -42,57 +44,64 @@ namespace GraphSimulator
             {
                 if (IsOverlapExistedNode(newPos))
                     return;
-
-
-                var node = new Node
+                if (!Helper.CreateNode(_numberOfNode, e.GetPosition(GraphContainer), out var newNode))
                 {
-                    X = e.GetPosition(GraphContainer).X,
-                    Y = e.GetPosition(GraphContainer).Y
-                };
-                Canvas.SetLeft(node, node.X - Node.Radius);
-                Canvas.SetTop(node, node.Y - Node.Radius);
+                    MessageBox.Show("Ten nodes are enough for a good simulation :)");
+                    return;
+                }
 
-                GraphContainer.Children.Add(node);
-                _operationStack.Push((Operation.ADD, new List<UIElement>() { node }));
+                GraphContainer.Children.Add(newNode);
+                _numberOfNode++;
+                _operationStack.Push((Operation.ADD, new List<UIElement>() { newNode }));
             }
             else
             {
                 if (!GetNodeAtCurrentClickPosition(newPos, out var curNode) && _startNode is null)
                     return;
-                
+
                 if (_startNode is null)
                     _startNode = curNode;
-                else 
+                else
                 {
+                    if (curNode.Identifier == _startNode.Identifier) return;
                     if (curNode is null)
                     {
-                        curNode = new Node
+                        if (!Helper.CreateNode(_numberOfNode, e.GetPosition(GraphContainer), out curNode))
                         {
-                            X = e.GetPosition(GraphContainer).X,
-                            Y = e.GetPosition(GraphContainer).Y
-                        };
-                        Canvas.SetLeft(curNode, curNode.X - Node.Radius);
-                        Canvas.SetTop(curNode, curNode.Y - Node.Radius);
+                            MessageBox.Show("Ten nodes are enough for a good simulation :)");
+                            return;
+                        }
+
                         GraphContainer.Children.Add(curNode);
+                        _numberOfNode++;
                         _operationStack.Push((Operation.ADD, new List<UIElement>() { curNode }));
                     }
                     _destNode = curNode;
 
-                    var actualDest = Helper.CalActualPointForNewConnection(_startNode.Centre, _destNode.Centre);
+                    var newCon = Helper.CreateConnection(_isDirectedGraph, _startNode, _destNode);
 
-                    var newCon = new Connection()
+                    new SubWindows.CostInputWindow
                     {
-                        X1 = _startNode.X,
-                        Y1 = _startNode.Y,
-                        X2 = actualDest.X,
-                        Y2 = actualDest.Y
-                    };
-                                        
-                    GraphContainer.Children.Add(newCon);
+                        Ok = cost =>
+                        {
+                            newCon.Cost = cost;
+                        }
+                    }.ShowDialog();
 
-                    Canvas.SetZIndex(newCon, -99);
+                    if (newCon.Cost == -1)
+                    {
+                        newCon = null;
+                        return;
+                    }
+                    else
+                    {
+                        GraphContainer.Children.Add(newCon);
 
-                    _operationStack.Push((Operation.ADD, new List<UIElement>() { newCon }));
+                        Canvas.SetZIndex(newCon, -99);
+
+                        _operationStack.Push((Operation.ADD, new List<UIElement>() { newCon }));
+                    }
+
                     _startNode.IsSelected = _destNode.IsSelected = false;
                     _startNode = _destNode = null;
                 }
@@ -115,16 +124,15 @@ namespace GraphSimulator
         private bool GetNodeAtCurrentClickPosition(Point clickPos, out Node n)
         {
             n = GraphContainer.Children.Cast<UIElement>()
-                .Where(node => {
+                .FirstOrDefault(node =>
+                {
                     if (node is Node tempNode)
                     {
                         var d = Node.Diameter;
                         return clickPos.X >= (tempNode.X - d) && clickPos.Y >= (tempNode.Y - d) && clickPos.X <= (tempNode.X + d) && clickPos.Y <= (tempNode.Y + d);
                     }
                     return false;
-                })
-                .Cast<Node>()
-                .FirstOrDefault();
+                }) as Node;
             return n is Node;
         }
 
@@ -144,7 +152,9 @@ namespace GraphSimulator
                     .Where(node => node.IsSelected).ToList();
                 if (nodesToDel.Count() == 0)
                     return;
+
                 _operationStack.Push((Operation.DELETE, nodesToDel));
+
                 foreach (var item in nodesToDel)
                 {
                     GraphContainer.Children.Remove(item);
@@ -176,6 +186,11 @@ namespace GraphSimulator
         private void ButtonAddConn_Checked(object sender, RoutedEventArgs e)
         {
             _isCreatingConnection = true;
+        }
+
+        private void Button_New_Click(object sender, RoutedEventArgs e)
+        {
+            GraphContainer.Children.Clear();
         }
 
         private void ButtonAddConn_Unchecked(object sender, RoutedEventArgs e)

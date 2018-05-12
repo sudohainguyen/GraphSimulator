@@ -6,45 +6,90 @@
         xmlns:local="clr-namespace:GraphSimulator"
         xmlns:usercontrol="clr-namespace:GraphSimulator.User_Controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        ResizeMode="NoResize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition Height="4*"/>
+            <RowDefinition Height="5*"/>
         </Grid.RowDefinitions>
+        <Grid.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="./Styles/AppStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </Grid.Resources>
         <TabControl Grid.Row="0">
             <TabItem Header="Create graph">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="4*"/>
-                    </Grid.ColumnDefinitions>
-                    
-                </Grid>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="New" 
+                            Click="Button_New_Click"
+                            Style="{StaticResource ButtonTool}"/>
+                    <Button Content="Open" Grid.Column="1"
+                            Style="{StaticResource ButtonTool}"/>
+                    <Button Content="Save" Grid.Column="2" 
+                            Style="{StaticResource ButtonTool}"/>
+                    <ToggleButton 
+                        Content="Add connection" 
+                        Grid.Column="3" 
+                        Style="{StaticResource ButtonTool}"
+                        Checked="ButtonAddConn_Checked"
+                        Unchecked="ButtonAddConn_Unchecked"/>
+                    <StackPanel Grid.Column="4" VerticalAlignment="Center"
+                                Width="100">
+                        <CheckBox Content=""/>
+                        
+                    </StackPanel>
+                </StackPanel>
             </TabItem>
             <TabItem Header="Run algorithms">
-                
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox VerticalAlignment="Center" 
+                              Width="150" 
+                              SelectedIndex="0"
+                              Margin="10,0,30,0">
+                        <ComboBoxItem>Dijkstra's Algorithm</ComboBoxItem>
+                        <ComboBoxItem>Bellman Ford's</ComboBoxItem>
+                        <ComboBoxItem>DFS Algorithm</ComboBoxItem>
+                        <ComboBoxItem>BFS Algorithm</ComboBoxItem>
+                    </ComboBox>
+                    <StackPanel VerticalAlignment="Center">
+                        <RadioButton Content="Only show the result" Margin="0,0,0,10"/>
+                        <RadioButton Content="Step by step" Margin="0,0,0,10" IsChecked="True"/>
+                        <RadioButton Content="Visualization" />
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center" Margin="30,0">
+                        <TextBlock Text="Speed" Margin="0,0,0,10"/>
+                        <Slider Width="200" Interval="25" Maximum="100"/>
+                    </StackPanel>
+                    <Button Content="Run" Style="{StaticResource ButtonTool}"/>
+                </StackPanel>
             </TabItem>
+            <TabItem Header="About"></TabItem>
         </TabControl>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
+                <ColumnDefinition MaxWidth="350" MinWidth="150"/>
+                <ColumnDefinition Width="3" />
                 <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
-            <StackPanel>
-                <Button Click="Button_Click">Change color</Button>
-                <ToggleButton Name="ButtonAddConn"
-                          Checked="ButtonAddConn_Checked"
-                          Unchecked="ButtonAddConn_Unchecked">Add connection</ToggleButton>
-            </StackPanel>
-            <Canvas Background="LightGray"
-                        Grid.Column="1"
-                        x:Name="GraphContainer"
-                        Panel.ZIndex="-999"
-                        Focusable="True"
-                        KeyDown="GraphContainer_KeyDown"
-                        MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
-                <usercontrol:Connection X1="10" Y1="200" Stroke="Black" />
+            <StackPanel/>
+            <GridSplitter 
+                Grid.Column="1" 
+                Width="3" 
+                HorizontalAlignment="Stretch" 
+                Background="DarkGray"/>
+            <Canvas Background="WhiteSmoke"
+                    Grid.Column="2"
+                    x:Name="GraphContainer"
+                    Panel.ZIndex="-999"
+                    Focusable="True"
+                    KeyDown="GraphContainer_KeyDown"
+                    MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
+                <usercontrol:Connection/>
             </Canvas>
         </Grid>
     </Grid>

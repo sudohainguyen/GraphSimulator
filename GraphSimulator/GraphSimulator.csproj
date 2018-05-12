@@ -57,6 +57,9 @@
     <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Helpers\Operation.cs" />
     <Compile Include="Helpers\RouteEngine.cs" />
+    <Compile Include="SubWindows\CostInputWindow.xaml.cs">
+      <DependentUpon>CostInputWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="User_Controls\Connection.cs" />
     <Compile Include="User_Controls\ConnectionBase.cs" />
     <Compile Include="User_Controls\ConnectionMultiLine.cs" />
@@ -75,6 +78,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Styles\AppStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SubWindows\CostInputWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="User_Controls\Node.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
