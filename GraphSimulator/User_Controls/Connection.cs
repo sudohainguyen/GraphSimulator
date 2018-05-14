@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -11,6 +12,8 @@ namespace GraphSimulator.User_Controls
 {
     public class Connection : ConnectionBase
     {
+        public TextBlock TextBlockCost { get; set; }
+
         /// <summary>
         ///     Identifies the X1 dependency property.
         /// </summary>
@@ -73,6 +76,19 @@ namespace GraphSimulator.User_Controls
                 typeof(double), typeof(Connection),
                 new FrameworkPropertyMetadata(100.0,
                         FrameworkPropertyMetadataOptions.AffectsMeasure));
+        public Connection() : base()
+        {
+
+        }
+
+        public Connection(bool isDirectedGraph, Node startNode, Node destNode) : base(isDirectedGraph, startNode, destNode)
+        {
+            X1 = startNode.X;
+            Y1 = startNode.Y;
+            X2 = destNode.X;
+            Y2 = destNode.Y;
+            //TODO: when add to existed one way connection (check evernote for more) ???
+        }
 
         /// <summary>
         ///     Gets or sets the y-coordinate of the ArrowLine end point.

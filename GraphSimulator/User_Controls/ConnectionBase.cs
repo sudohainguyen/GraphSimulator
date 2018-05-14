@@ -14,6 +14,13 @@ namespace GraphSimulator.User_Controls
 {
     public abstract class ConnectionBase : Shape, INotifyPropertyChanged
     {
+        public ConnectionBase(bool isDirectedGraph, Node startNode, Node destNode) : this()
+        {
+            ArrowDirection = isDirectedGraph ? Direction.OneWay : Direction.None;
+            StartNode = startNode.Identity;
+            DestNode = destNode.Identity;
+        }
+
         protected PathGeometry pathgeo;
         protected PathFigure pathfigLine;
         protected PolyLineSegment polysegLine;
