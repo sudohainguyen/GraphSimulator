@@ -79,7 +79,7 @@ namespace GraphSimulator.Helpers
             return new Point(0, 0);
         }
 
-        public static bool CreateNode(int curNumberOfNodeInCanvas, Point clickPos, out Node newNode)
+        public static bool CreateNode(ref int curNumberOfNodeInCanvas, Point clickPos, out Node newNode)
         {
             if (curNumberOfNodeInCanvas == 10)
             {
@@ -91,39 +91,41 @@ namespace GraphSimulator.Helpers
             {
                 X = clickPos.X,
                 Y = clickPos.Y,
-                Identifier = (char)(curNumberOfNodeInCanvas + 65)
+                Identity = (char)(curNumberOfNodeInCanvas + 65)
             };
             Canvas.SetLeft(newNode, newNode.X - Node.Radius);
             Canvas.SetTop(newNode, newNode.Y - Node.Radius);
+            curNumberOfNodeInCanvas++;
             return true;
         }
 
         public static Connection CreateConnection(bool isDirectedGraph, Node startNode, Node destNode)
         {
-            Direction direction = Direction.OneWay;
-            Point pointForConnection;
-
-            if (isDirectedGraph)
-            {
-                direction = Direction.OneWay;
-                pointForConnection = Helper.CalActualPointForNewConnection(startNode.Centre, destNode.Centre);
-            }
-            else
-            {
-                direction = Direction.None;
-                pointForConnection = destNode.Centre;
-            }
-
             var newCon = new Connection
             {
                 X1 = startNode.X,
                 Y1 = startNode.Y,
-                X2 = pointForConnection.X,
-                Y2 = pointForConnection.Y,
-                ArrowDirection = direction
+                X2 = destNode.X,
+                Y2 = destNode.Y,
+                ArrowDirection = isDirectedGraph ? Direction.OneWay : Direction.None,
+                StartNode = startNode.Identity,
+                DestNode = destNode.Identity
             };
 
+            //TODO: when add to existed one way connection (check evernote for more) ???
+
             return newCon;
+        }
+
+        public static Dictionary<char, Route> InitResults(char startNode, IEnumerable<char> nodes, IEnumerable<Connection> connections)
+        {
+            var dict = new Dictionary<char, Route>();
+            foreach (var node in nodes)
+            {
+                dict.Add(node, new Route { DestNode = node } );
+            }
+            dict[startNode].RouteCost = 0;
+            return dict;
         }
     }
 }
