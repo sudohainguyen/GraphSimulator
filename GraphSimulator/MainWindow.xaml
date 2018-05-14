@@ -30,7 +30,8 @@
                             Click="Button_New_Click"
                             Style="{StaticResource ButtonTool}"/>
                     <Button Content="Open" Grid.Column="1"
-                            Style="{StaticResource ButtonTool}"/>
+                            Style="{StaticResource ButtonTool}"
+                            Click="Button_Open_Click"/>
                     <Button Content="Save" Grid.Column="2" 
                             Style="{StaticResource ButtonTool}"
                             Click="Button_Save_Click"/>
@@ -101,7 +102,8 @@
                           CanUserAddRows="False"
                           GridLinesVisibility="All"
                           SelectionUnit="FullRow"
-                          Height="200">
+                          Height="200"
+                          SelectionChanged="dataGrid_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Node"
                                             Width="*"
@@ -140,7 +142,7 @@
                     IsEnabled="False"
                     KeyDown="GraphContainer_KeyDown"
                     MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
-                <usercontrol:Connection/>
+                <usercontrol:Connection ArrowDirection="TwoWay"/>
             </Canvas>
         </Grid>
     </Grid>

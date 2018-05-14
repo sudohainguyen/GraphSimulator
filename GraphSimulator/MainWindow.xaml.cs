@@ -17,6 +17,9 @@ using System.Windows.Shapes;
 using System.Runtime.CompilerServices;
 using GraphSimulator.Helpers;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json;
+using Microsoft.Win32;
+using System.IO;
 
 namespace GraphSimulator
 {
@@ -72,24 +75,24 @@ namespace GraphSimulator
         public MainWindow()
         {
             InitializeComponent();
-            Loaded += (x, y) => Keyboard.Focus(GraphContainer);
         }
 
         private void GraphContainer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Keyboard.Focus(GraphContainer);
             var newPos = e.GetPosition(GraphContainer);
 
             if (!IsCreatingConnection)
             {
                 if (IsOverlapExistedNode(newPos))
                     return;
-                if (!Helper.CreateNode(ref _numberOfNode, e.GetPosition(GraphContainer), out var newNode))
+                if (!Helper.CreateNode(_numberOfNode, e.GetPosition(GraphContainer), out var newNode))
                 {
                     MessageBox.Show("Ten nodes are enough for a good simulation :)");
                     return;
                 }
 
-                GraphContainer.Children.Add(newNode);
+                AddNewNode(newNode);
                 _operationStack.Push((Operation.ADD, new List<UIElement>() { newNode }));
             }
             else
@@ -103,18 +106,17 @@ namespace GraphSimulator
                 {
                     if (targetNode is null)
                     {
-                        if (!Helper.CreateNode(ref _numberOfNode, e.GetPosition(GraphContainer), out targetNode))
+                        if (!Helper.CreateNode(_numberOfNode, e.GetPosition(GraphContainer), out targetNode))
                         {
                             MessageBox.Show("Ten nodes are enough for a good simulation :)");
                             return;
                         }
-
-                        GraphContainer.Children.Add(targetNode);
+                        AddNewNode(targetNode);
                         _operationStack.Push((Operation.ADD, new List<UIElement>() { targetNode }));
                     }
                     else if (targetNode.Identity == _startNode.Identity) return;
 
-                    var newCon = Helper.CreateConnection(_isDirectedGraph, _startNode, targetNode);
+                    var newCon = new Connection(_isDirectedGraph, _startNode, targetNode);
 
                     if (IsRandomCost)
                     {
@@ -126,9 +128,10 @@ namespace GraphSimulator
                         {
                             Ok = cost =>
                             {
-                                newCon.Cost = cost;
-                            }
-                        }.ShowDialog();
+                                newCon.Cost = cost;  
+                            },
+                            Owner = this
+                    }.ShowDialog();
                     }
                     if (newCon.Cost == -1)
                     {
@@ -136,24 +139,7 @@ namespace GraphSimulator
                     }
                     else
                     {
-                        var vec = targetNode.Centre - _startNode.Centre;
-                        vec /= 2;
-                        var centralPoint = vec + _startNode.Centre;
-
-                        var tblCost = new TextBlock
-                        {
-                            Text = newCon.Cost.ToString(),
-                            FontSize = 17,
-                            FontWeight = FontWeights.DemiBold
-                        };
-
-                        Canvas.SetZIndex(newCon, -99);
-
-                        Canvas.SetLeft(tblCost, centralPoint.X);
-                        Canvas.SetTop(tblCost, centralPoint.Y);
-
-                        GraphContainer.Children.Add(newCon);
-                        GraphContainer.Children.Add(tblCost);
+                        var tblCost = AddNewConnection(newCon, _startNode.Centre, targetNode.Centre);
                         _operationStack.Push((Operation.ADD, new List<UIElement>() { newCon, tblCost }));
                     }
 
@@ -210,6 +196,7 @@ namespace GraphSimulator
                     foreach (var c in controls)
                     {
                         GraphContainer.Children.Remove(c);
+                        _numberOfNode--;
                     }
                 }
                 else
@@ -217,14 +204,13 @@ namespace GraphSimulator
                     foreach (var c in controls)
                     {
                         GraphContainer.Children.Add(c);
-                        //CanvasModify(c as Node);
                     }
                 }
             }
             else if (e.Key == Key.S && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
-                if (!SaveWorkspace())
-                    MessageBox.Show("Unexpected Error! Try again later.");
+                if (!SaveWorkspace(out var err))
+                    MessageBox.Show(err);
             }
             else if (e.Key == Key.N && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
@@ -243,14 +229,14 @@ namespace GraphSimulator
 
         private void NewWorkspace()
         {
-            GraphContainer.Children.Clear();
-            _numberOfNode = 0;
+            ResetWorkspace();
 
             bool? selection = null;
 
             new SubWindows.SelectGraphTypeWindow
             {
                 Ok = undirected => selection = undirected,
+                Owner = this
             }.ShowDialog();
 
             if (selection is null)
@@ -261,19 +247,172 @@ namespace GraphSimulator
             }
 
             _isDirectedGraph = !selection.Value;
+
             coveringPanel.Visibility = Visibility.Collapsed;
             GraphContainer.IsEnabled = true;
         }
 
         private void OpenWorkspace()
         {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "Text files (*.txt)|*.txt",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            };
+            string raw = "";
+            if (dialog.ShowDialog(this).Value)
+                raw = File.ReadAllText(dialog.FileName);
 
+            if (string.IsNullOrEmpty(raw))
+                return;
+
+            var decodedData = Helper.Base64Decode(raw).Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+
+            IEnumerable<NodeData> nodesdata = null;
+            IEnumerable<ConData> consdata = null;
+            try
+            {
+                _isDirectedGraph = JsonConvert.DeserializeObject<bool>(decodedData[0]);
+                nodesdata = JsonConvert.DeserializeObject<IEnumerable<NodeData>>(decodedData[1]);
+                consdata = JsonConvert.DeserializeObject<IEnumerable<ConData>>(decodedData[2]);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+
+            ResetWorkspace();
+            coveringPanel.Visibility = Visibility.Collapsed;
+            GraphContainer.IsEnabled = true;
+
+            foreach (var n in nodesdata)
+            {
+                var newNode = new Node
+                {
+                    X = n.X,
+                    Y = n.Y,
+                    Identity = n.Id
+                };
+                AddNewNode(newNode);
+            }
+            foreach (var c in consdata)
+            {
+                var start = RouteEngine.Instance.Nodes.FirstOrDefault(n => n.Identity == c.Start);
+                var dest = RouteEngine.Instance.Nodes.FirstOrDefault(n => n.Identity == c.Dest);
+                var newCon = new Connection(_isDirectedGraph, start, dest)
+                {
+                    Cost = c.Cost,
+                    ArrowDirection = (Direction)Enum.ToObject(typeof(Direction), c.Dir)
+                };
+                AddNewConnection(newCon, start.Centre, dest.Centre);
+            }
         }
 
-        private bool SaveWorkspace()
+        private void ResetWorkspace()
         {
-            Routes.Add(new Route { DestNode = 'A' });
+            _numberOfNode = 0;
+            RouteEngine.Instance.Connections.Clear();
+            RouteEngine.Instance.Nodes.Clear();
+            GraphContainer.Children.Clear();
+            _startNode = null;
+        }
+
+        private bool SaveWorkspace(out string err)
+        {
+            err = null;
+            var nodes = RouteEngine.Instance.Nodes;
+            var cons = RouteEngine.Instance.Connections;
+
+            if (nodes.Count() == 0 && cons.Count() == 0)
+            {
+                err = "Cannot save an empty workspace.";
+                return false;
+            }
+
+            var nodesdata = new List<NodeData>();
+            var consdata = new List<ConData>();
+
+            foreach (var node in nodes)
+            {
+                var obj = new NodeData
+                {
+                    Id = node.Identity,
+                    X = node.X,
+                    Y = node.Y
+                };
+                nodesdata.Add(obj);
+            }
+
+            foreach (var con in cons)
+            {
+                var obj = new ConData
+                {
+                    Dest = con.DestNode,
+                    Start = con.StartNode,
+                    Cost = con.Cost,
+                    Dir = (int)con.ArrowDirection
+                };
+                consdata.Add(obj);
+            }
+            var isDr = _isDirectedGraph;
+            var jsonGraphType = JsonConvert.SerializeObject(isDr);
+            var jsonNodes = JsonConvert.SerializeObject(nodesdata);
+            var jsonCons = JsonConvert.SerializeObject(consdata);
+
+            var dialog = new SaveFileDialog()
+            {
+                Filter = "Text file (*.txt)|*.txt",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                OverwritePrompt = true
+            };
+            var encodedData = Helper.Base64Encode(jsonGraphType + "--" + jsonNodes + "--" + jsonCons);
+            if (!dialog.ShowDialog(this).Value)
+            {
+                err = "Unexpected Error.";
+                return false;
+            }
+            File.WriteAllText(dialog.FileName, encodedData);
+
             return true;
+        }
+
+        private void AddNewNode(Node newNode)
+        {
+            RouteEngine.Instance.Nodes.Add(newNode);
+            GraphContainer.Children.Add(newNode);
+            Canvas.SetLeft(newNode, newNode.X - Node.Radius);
+            Canvas.SetTop(newNode, newNode.Y - Node.Radius);
+            _numberOfNode++;
+        }
+
+        private TextBlock AddNewConnection(Connection newCon, Point startNode, Point targetNode)
+        {
+            var vec = targetNode - startNode;
+            vec /= 3;
+            vec *= 2;
+            
+            var mat = new Matrix();
+            mat.Rotate(5);
+            var pointForTbl = startNode + vec * mat;
+
+            var tblCost = new TextBlock
+            {
+                Text = newCon.Cost.ToString(),
+                FontSize = 17,
+                FontWeight = FontWeights.DemiBold
+            };
+
+            newCon.TextBlockCost = tblCost;
+            Canvas.SetZIndex(newCon, -99);
+
+            Canvas.SetLeft(tblCost, pointForTbl.X - 10);
+            Canvas.SetTop(tblCost, pointForTbl.Y - 10);
+
+            GraphContainer.Children.Add(newCon);
+            GraphContainer.Children.Add(tblCost);
+            RouteEngine.Instance.Connections.Add(newCon);
+
+            return tblCost;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -293,26 +432,51 @@ namespace GraphSimulator
 
             var root = selectedNodes.ElementAt(0);
 
-            foreach (var uiel in GraphContainer.Children)
-            {
-                if (uiel is Node node)
-                {
-                    RouteEngine.Instance.Nodes.Add(node);
-                }
-                else if (uiel is Connection con)
-                {
-                    RouteEngine.Instance.Connections.Add(con);
-                }
-            }
-
             var dict = RouteEngine.Instance.RunDijsktra(root);
             Routes = new ObservableCollection<Route>(dict.Values);
         }
 
         private void Button_Save_Click(object sender, RoutedEventArgs e)
         {
-            if (!SaveWorkspace())
-                MessageBox.Show("Unexpected Error");
+            if (!SaveWorkspace(out var err))
+                MessageBox.Show(err);
+        }
+
+        private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            foreach (var item in GraphContainer.Children.OfType<UIElement>())
+            {
+                if (item is Node n) n.IsSelected = false;
+                else if (item is Connection con) con.IsSelected = false;
+            }
+            if (dataGrid.CurrentItem is Route r)
+            {
+                foreach (var con in r.Paths)
+                {
+                    con.IsSelected = true;
+                    RouteEngine.Instance.Nodes.FirstOrDefault(n => n.Identity == con.DestNode).IsSelected = true;
+                }
+            }
+        }
+
+        private class NodeData
+        {
+            public char Id { get; set; }
+            public double X { get; set; }
+            public double Y { get; set; }
+        }
+
+        private class ConData
+        {
+            public char Start { get; set; }
+            public char Dest { get; set; }
+            public int Dir { get; set; }
+            public int Cost { get; set; }
+        }
+
+        private void Button_Open_Click(object sender, RoutedEventArgs e)
+        {
+            OpenWorkspace();
         }
     }
 }
