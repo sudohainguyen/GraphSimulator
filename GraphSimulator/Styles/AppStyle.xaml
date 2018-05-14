@@ -5,31 +5,52 @@
     <Style TargetType="Control" x:Key="ButtonTool">
         <Setter Property="Width" Value="100"/>
         <Setter Property="Margin" Value="10,10"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}" 
+                                Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center"                  
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Button.IsPressed" Value="True">
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.98"
+                                                    ScaleY="0.98"
+                                                    CenterX="0.5"
+                                                    CenterY="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
-    <SolidColorBrush x:Key="UNSELECTED_FILL_BRUSH">#98c6ea</SolidColorBrush>
-    <SolidColorBrush x:Key="SELECTED_FILL_BRUSH">#c15757</SolidColorBrush>
-    <SolidColorBrush x:Key="UNSELECTED_STROKE_BRUSH">#0065bd</SolidColorBrush>
-    <SolidColorBrush x:Key="SELECTED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
-    <SolidColorBrush x:Key="UNSELECTED_IDENTIFIER_BRUSH">#000000</SolidColorBrush>
-    <SolidColorBrush x:Key="SELECTED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
-
-    <Style TargetType="us:Node">
+    <Style TargetType="ToggleButton">
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}" 
+                                Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center"                  
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Style.Triggers>
-            <Trigger Property="IsSelected" Value="True">
-                <Setter Property="StrokeBrush" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
-                <Setter Property="IdentifierBrush" Value="{DynamicResource SELECTED_IDENTIFIER_BRUSH}"/>
-                <Setter Property="FillBrush" Value="{DynamicResource SELECTED_FILL_BRUSH}"/>
-            </Trigger>
-            <Trigger Property="IsSelected" Value="False">
-                <Setter Property="StrokeBrush" Value="{DynamicResource UNSELECTED_STROKE_BRUSH}"/>
-                <Setter Property="IdentifierBrush" Value="{DynamicResource UNSELECTED_IDENTIFIER_BRUSH}"/>
-                <Setter Property="FillBrush" Value="{DynamicResource UNSELECTED_FILL_BRUSH}"/>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SELECTED_FILL_BRUSH}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
+                <Setter Property="Foreground" Value="{DynamicResource SELECTED_IDENTIFIER_BRUSH}"/>
             </Trigger>
         </Style.Triggers>
-    </Style>
-
-    <Style TargetType="us:Connection">
-        <Setter Property="Stroke" Value="{DynamicResource UNSELECTED_STROKE_BRUSH}"/>
-        <Setter Property="StrokeThickness" Value="2.5"/>
     </Style>
 </ResourceDictionary>
