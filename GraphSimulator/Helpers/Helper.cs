@@ -79,7 +79,7 @@ namespace GraphSimulator.Helpers
             return new Point(0, 0);
         }
 
-        public static bool CreateNode(ref int curNumberOfNodeInCanvas, Point clickPos, out Node newNode)
+        public static bool CreateNode(int curNumberOfNodeInCanvas, Point clickPos, out Node newNode)
         {
             if (curNumberOfNodeInCanvas == 10)
             {
@@ -93,29 +93,27 @@ namespace GraphSimulator.Helpers
                 Y = clickPos.Y,
                 Identity = (char)(curNumberOfNodeInCanvas + 65)
             };
-            Canvas.SetLeft(newNode, newNode.X - Node.Radius);
-            Canvas.SetTop(newNode, newNode.Y - Node.Radius);
-            curNumberOfNodeInCanvas++;
+
             return true;
         }
 
-        public static Connection CreateConnection(bool isDirectedGraph, Node startNode, Node destNode)
-        {
-            var newCon = new Connection
-            {
-                X1 = startNode.X,
-                Y1 = startNode.Y,
-                X2 = destNode.X,
-                Y2 = destNode.Y,
-                ArrowDirection = isDirectedGraph ? Direction.OneWay : Direction.None,
-                StartNode = startNode.Identity,
-                DestNode = destNode.Identity
-            };
+        //public static Connection CreateConnection(bool isDirectedGraph, Node startNode, Node destNode)
+        //{
+        //    var newCon = new Connection
+        //    {
+        //        X1 = startNode.X,
+        //        Y1 = startNode.Y,
+        //        X2 = destNode.X,
+        //        Y2 = destNode.Y,
+        //        ArrowDirection = isDirectedGraph ? Direction.OneWay : Direction.None,
+        //        StartNode = startNode.Identity,
+        //        DestNode = destNode.Identity
+        //    };
 
-            //TODO: when add to existed one way connection (check evernote for more) ???
+        //    //TODO: when add to existed one way connection (check evernote for more) ???
 
-            return newCon;
-        }
+        //    return newCon;
+        //}
 
         public static Dictionary<char, Route> InitResults(char startNode, IEnumerable<char> nodes, IEnumerable<Connection> connections)
         {
@@ -126,6 +124,17 @@ namespace GraphSimulator.Helpers
             }
             dict[startNode].RouteCost = 0;
             return dict;
+        }
+
+        public static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+        public static string Base64Decode(string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
     }
 }
