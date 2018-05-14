@@ -24,7 +24,7 @@
                 </VisualBrush.Visual>
             </VisualBrush>
         </Grid.Background>
-        <TextBlock Text="{Binding Identifier}" 
+        <TextBlock Text="{Binding Identity}" 
                    Foreground="{Binding IdentifierBrush}"
                    FontSize="14"
                    FontWeight="DemiBold"

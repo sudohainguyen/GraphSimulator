@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using GraphSimulator.Helpers;
 
 namespace GraphSimulator.User_Controls
 {
@@ -25,10 +26,11 @@ namespace GraphSimulator.User_Controls
         private static readonly Brush SELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(183, 61, 61));
         private static readonly Brush UNSELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
 
-        public Node StartNode { get; set; }
-        public Node DestNode { get; set; }
+        public char StartNode { get; set; }
+        public char DestNode { get; set; }
 
         public int Cost { get; set; } = 0;
+        public bool IsTwoWay => ArrowDirection == Direction.TwoWay || ArrowDirection == Direction.None;
 
         //private bool _isSelected = false;
 
@@ -182,14 +184,16 @@ namespace GraphSimulator.User_Controls
             vect.Normalize();
             vect *= ArrowLength;
 
+            var arrowPoint = Helper.CalActualPointForNewConnection(pt1, pt2);
+
             var polyseg = pathfig.Segments[0] as PolyLineSegment;
             polyseg.Points.Clear();
             matx.Rotate(ArrowAngle / 2);
-            pathfig.StartPoint = pt2 + vect * matx;
-            polyseg.Points.Add(pt2);
+            pathfig.StartPoint = arrowPoint + vect * matx;
+            polyseg.Points.Add(arrowPoint);
 
             matx.Rotate(-ArrowAngle);
-            polyseg.Points.Add(pt2 + vect * matx);
+            polyseg.Points.Add(arrowPoint + vect * matx);
             pathfig.IsClosed = IsArrowClosed;
 
             return pathfig;
@@ -200,13 +204,5 @@ namespace GraphSimulator.User_Controls
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-    }
-
-    public enum Direction
-    {
-        None = 0,
-        OneWay,
-        OneWayReserved,
-        TwoWay
     }
 }

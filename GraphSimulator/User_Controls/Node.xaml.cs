@@ -20,7 +20,7 @@ namespace GraphSimulator.User_Controls
     /// <summary>
     /// Interaction logic for Node.xaml
     /// </summary>
-    public partial class Node : UserControl, INotifyPropertyChanged
+    public partial class Node : UserControl
     {
         private static Brush UNSELECTED_FILL_BRUSH = new SolidColorBrush(Color.FromRgb(152, 198, 234));
         private static Brush SELECTED_FILL_BRUSH = new SolidColorBrush(Color.FromRgb(193, 87, 87));
@@ -29,71 +29,17 @@ namespace GraphSimulator.User_Controls
         private static Brush UNSELECTED_IDENTIFIER_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
         private static Brush SELECTED_IDENTIFIER_BRUSH = new SolidColorBrush(Color.FromRgb(255, 255, 255));
 
-        //private bool _isSelected = false;
-        //private Brush _fillBrush = UNSELECTED_FILL_BRUSH;
-        //private Brush _strokeBrush = UNSELECTED_STROKE_BRUSH;
-        //private Brush _identifierBrush = UNSELECTED_IDENTIFIER_BRUSH;
         private bool _inDrag = false;
         private Point _anchorPoint;
 
         public double X { get; set; }
         public double Y { get; set; }
-
         public Point Centre => new Point(X, Y);
 
-        public char Identifier { get; set; } = 'A';
+        public char Identity { get; set; } = 'A';
 
         public static int Diameter => 40;
         public static int Radius => Diameter / 2;
-
-        //public bool IsSelected
-        //{
-        //    get => _isSelected;
-        //    set
-        //    {
-        //        _isSelected = value;
-        //        FillBrush = _isSelected
-        //            ? SELECTED_FILL_BRUSH
-        //            : UNSELECTED_FILL_BRUSH;
-        //        StrokeBrush = _isSelected
-        //            ? SELECTED_STROKE_BRUSH
-        //            : UNSELECTED_STROKE_BRUSH;
-        //        IdentifierBrush = _isSelected
-        //            ? SELECTED_IDENTIFIER_BRUSH
-        //            : UNSELECTED_IDENTIFIER_BRUSH;
-        //        OnPropertyChanged(nameof(IsSelected));
-        //    }
-        //}
-
-        //public Brush FillBrush
-        //{
-        //    get => _fillBrush;
-        //    private set
-        //    {
-        //        _fillBrush = value;
-        //        OnPropertyChanged(nameof(FillBrush));
-        //    }
-        //}
-
-        //public Brush StrokeBrush
-        //{
-        //    get => _strokeBrush;
-        //    private set
-        //    {
-        //        _strokeBrush = value;
-        //        OnPropertyChanged(nameof(StrokeBrush));
-        //    }
-        //}
-
-        //public Brush IdentifierBrush
-        //{
-        //    get => _identifierBrush;
-        //    private set
-        //    {
-        //        _identifierBrush = value;
-        //        OnPropertyChanged(nameof(IdentifierBrush));
-        //    }
-        //}
 
         public Node()
         {
@@ -110,6 +56,18 @@ namespace GraphSimulator.User_Controls
         // Using a DependencyProperty as the backing store for Selected.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedProperty =
             DependencyProperty.Register("IsSelected", typeof(bool), typeof(Node),
+                new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+
+        public bool IsProcessed
+        {
+            get { return (bool)GetValue(IsProcessedProperty); }
+            set { SetValue(IsProcessedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsProcessed.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsProcessedProperty =
+            DependencyProperty.Register("IsProcessed", typeof(bool), typeof(Node),
                 new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
 
@@ -154,12 +112,6 @@ namespace GraphSimulator.User_Controls
         private void Node_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             IsSelected = !IsSelected; 
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void Node_MouseMove(object sender, MouseEventArgs e)
