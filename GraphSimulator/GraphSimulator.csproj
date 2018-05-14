@@ -54,11 +54,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converter\RouteCostConverter.cs" />
+    <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Helpers\Helper.cs" />
-    <Compile Include="Helpers\Operation.cs" />
     <Compile Include="Helpers\RouteEngine.cs" />
     <Compile Include="SubWindows\CostInputWindow.xaml.cs">
       <DependentUpon>CostInputWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SubWindows\SelectGraphTypeWindow.xaml.cs">
+      <DependentUpon>SelectGraphTypeWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="User_Controls\Connection.cs" />
     <Compile Include="User_Controls\ConnectionBase.cs" />
@@ -83,6 +87,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SubWindows\CostInputWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SubWindows\SelectGraphTypeWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

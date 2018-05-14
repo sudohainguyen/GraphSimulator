@@ -2,8 +2,50 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:GraphSimulator"
+             xmlns:us="clr-namespace:GraphSimulator.User_Controls"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <SolidColorBrush x:Key="UNSELECTED_FILL_BRUSH">#98c6ea</SolidColorBrush>
+        <SolidColorBrush x:Key="SELECTED_FILL_BRUSH">#c15757</SolidColorBrush>
+        <SolidColorBrush x:Key="UNSELECTED_STROKE_BRUSH">#0065bd</SolidColorBrush>
+        <SolidColorBrush x:Key="SELECTED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
+        <SolidColorBrush x:Key="UNSELECTED_IDENTIFIER_BRUSH">#000000</SolidColorBrush>
+        <SolidColorBrush x:Key="SELECTED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
+        <SolidColorBrush x:Key="PROCESSED_FILL_BRUSH"></SolidColorBrush>
+        
+        <Style TargetType="us:Node">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="StrokeBrush" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
+                    <Setter Property="IdentifierBrush" Value="{DynamicResource SELECTED_IDENTIFIER_BRUSH}"/>
+                    <Setter Property="FillBrush" Value="{DynamicResource SELECTED_FILL_BRUSH}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="False">
+                    <Setter Property="StrokeBrush" Value="{DynamicResource UNSELECTED_STROKE_BRUSH}"/>
+                    <Setter Property="IdentifierBrush" Value="{DynamicResource UNSELECTED_IDENTIFIER_BRUSH}"/>
+                    <Setter Property="FillBrush" Value="{DynamicResource UNSELECTED_FILL_BRUSH}"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsProcessed" Value="True"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="FillBrush" Value="{DynamicResource PROCESSED_FILL_BRUSH}"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="us:Connection">
+            <Setter Property="Stroke" Value="Black"/>
+            <Setter Property="StrokeThickness" Value="2.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Stroke" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="False">
+                    <Setter Property="Stroke" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Application.Resources>
 </Application>

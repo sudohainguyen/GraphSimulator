@@ -47,7 +47,7 @@ namespace GraphSimulator.SubWindows
             }
             else
             {
-                MessageBox.Show("Something wrong happens, please try again");
+                MessageBox.Show("Something wrong happened, please try again");
             }
         }
 
