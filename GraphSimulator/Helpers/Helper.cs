@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace GraphSimulator.Helpers
 {
@@ -135,6 +136,17 @@ namespace GraphSimulator.Helpers
         {
             var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
             return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+        }
+
+        public static Point CalPointForTextBlockCost(Point startNode, Point destNode)
+        {
+            var vec = destNode - startNode;
+            vec /= 3;
+            vec *= 2;
+
+            var mat = new Matrix();
+            mat.Rotate(5);
+            return startNode + vec * mat;
         }
     }
 }

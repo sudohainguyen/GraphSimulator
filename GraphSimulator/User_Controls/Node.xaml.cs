@@ -150,6 +150,9 @@ namespace GraphSimulator.User_Controls
                         con.X2 = X;
                         con.Y2 = Y;
                     }
+                    var pointForTblCost = Helper.CalPointForTextBlockCost(new Point(con.X1, con.Y1), new Point(con.X2, con.Y2));
+                    Canvas.SetLeft(con.TextBlockCost, pointForTblCost.X - 10);
+                    Canvas.SetTop(con.TextBlockCost, pointForTblCost.Y - 10);
                 }
                 e.Handled = true;
             }

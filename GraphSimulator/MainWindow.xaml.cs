@@ -139,7 +139,7 @@ namespace GraphSimulator
                     }
                     else
                     {
-                        var tblCost = AddNewConnection(newCon, _startNode.Centre, targetNode.Centre);
+                        var tblCost = AddNewConnection(newCon);
                         _operationStack.Push((Operation.ADD, new List<UIElement>() { newCon, tblCost }));
                     }
 
@@ -304,7 +304,7 @@ namespace GraphSimulator
                     Cost = c.Cost,
                     ArrowDirection = (Direction)Enum.ToObject(typeof(Direction), c.Dir)
                 };
-                AddNewConnection(newCon, start.Centre, dest.Centre);
+                AddNewConnection(newCon);
             }
         }
 
@@ -385,16 +385,8 @@ namespace GraphSimulator
             _numberOfNode++;
         }
 
-        private TextBlock AddNewConnection(Connection newCon, Point startNode, Point targetNode)
+        private TextBlock AddNewConnection(Connection newCon)
         {
-            var vec = targetNode - startNode;
-            vec /= 3;
-            vec *= 2;
-            
-            var mat = new Matrix();
-            mat.Rotate(5);
-            var pointForTbl = startNode + vec * mat;
-
             var tblCost = new TextBlock
             {
                 Text = newCon.Cost.ToString(),
@@ -404,6 +396,8 @@ namespace GraphSimulator
 
             newCon.TextBlockCost = tblCost;
             Canvas.SetZIndex(newCon, -99);
+
+            var pointForTbl = Helper.CalPointForTextBlockCost(new Point(newCon.X1, newCon.Y1), new Point(newCon.X2, newCon.Y2));
 
             Canvas.SetLeft(tblCost, pointForTbl.X - 10);
             Canvas.SetTop(tblCost, pointForTbl.Y - 10);
