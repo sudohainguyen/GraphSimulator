@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
+using GraphSimulator.Helpers;
 
 namespace GraphSimulator.User_Controls
 {
@@ -119,6 +120,8 @@ namespace GraphSimulator.User_Controls
 
             if (_inDrag)
             {
+                this.Cursor = Cursors.ScrollAll;
+
                 var parent = this.Parent as Panel;
                 var curPoint = e.GetPosition(parent);
 
@@ -131,8 +134,23 @@ namespace GraphSimulator.User_Controls
                 Canvas.SetLeft(this, Canvas.GetLeft(this) + (curPoint.X - _anchorPoint.X));
                 Canvas.SetTop(this, Canvas.GetTop(this) + (curPoint.Y - _anchorPoint.Y));
                 _anchorPoint = curPoint;
+
                 X = Canvas.GetLeft(this) + Node.Radius;
                 Y = Canvas.GetTop(this) + Node.Radius;
+
+                foreach (var con in RouteEngine.Instance.Connections)
+                {
+                    if (con.StartNode == this.Identity)
+                    {
+                        con.X1 = X;
+                        con.Y1 = Y;
+                    }
+                    else if (con.DestNode == this.Identity)
+                    {
+                        con.X2 = X;
+                        con.Y2 = Y;
+                    }
+                }
                 e.Handled = true;
             }
         }
