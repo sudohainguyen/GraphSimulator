@@ -6,33 +6,45 @@
              xmlns:local="clr-namespace:GraphSimulator.User_Controls"
              mc:Ignorable="d"
              Height="Auto" Width="Auto"
+             xmlns:converter="clr-namespace:GraphSimulator.Converter"
              MouseRightButtonDown="Node_MouseRightButtonDown"
              MouseRightButtonUp="Node_MouseRightButtonUp"
              MouseMove="Node_MouseMove">
-    <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:Node}}}"
+    <StackPanel Height="Auto"
+                DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:Node}}}">
+        <StackPanel.Resources>
+            <converter:RouteCostConverter x:Key="RouteCostConverter"/>
+            <converter:RouteCostVisibilityConverter x:Key="RouteCostVisibilityConverter"/>
+        </StackPanel.Resources>
+        <Grid 
           Height="{Binding Diameter}"
           MouseLeftButtonDown="Node_MouseLeftButtonDown"
           Cursor="Hand">
-        <Grid.Background>
-            <VisualBrush>
-                <VisualBrush.Visual>
-                    <Ellipse Height="{Binding Diameter}"
+            <Grid.Background>
+                <VisualBrush>
+                    <VisualBrush.Visual>
+                        <Ellipse Height="{Binding Diameter}"
                              Width="{Binding Diameter}"
                              Fill="{Binding FillBrush}"
                              Stroke="{Binding StrokeBrush}"
                              StrokeThickness="2"/>
-                </VisualBrush.Visual>
-            </VisualBrush>
-        </Grid.Background>
-        <TextBlock Text="{Binding Identity}" 
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Grid.Background>
+            <TextBlock Text="{Binding Identity}" 
                    Foreground="{Binding IdentifierBrush}"
                    FontSize="14"
                    FontWeight="DemiBold"
                    TextAlignment="Center"
                    VerticalAlignment="Center"
                    Width="{Binding Diameter}">
-        </TextBlock>
-    </Grid>
-    
+            </TextBlock>
+        </Grid>
+        <TextBlock HorizontalAlignment="Center"
+                   FontWeight="DemiBold"
+                   Foreground="{StaticResource PROCESSED_STROKE_BRUSH}"
+                   Visibility="{Binding NodeStatus, Converter={StaticResource RouteCostVisibilityConverter}}"
+                   Text="{Binding RouteCost, Converter={StaticResource RouteCostConverter}}"/>
+    </StackPanel>
 
 </UserControl>

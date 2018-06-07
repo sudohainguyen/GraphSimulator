@@ -48,28 +48,33 @@ namespace GraphSimulator.User_Controls
         }
 
 
-        public bool IsSelected
+        public bool IsSelected => NodeStatus == NodeStatus.IsSelected;
+        public bool Processed => NodeStatus == NodeStatus.Processed;
+
+
+        public NodeStatus NodeStatus
         {
-            get { return (bool)GetValue(SelectedProperty); }
-            set { SetValue(SelectedProperty, value); }
+            get { return (NodeStatus)GetValue(NodeStatusProperty); }
+            set { SetValue(NodeStatusProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Selected.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectedProperty =
-            DependencyProperty.Register("IsSelected", typeof(bool), typeof(Node),
-                new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsMeasure));
+        // Using a DependencyProperty as the backing store for NodeStatus.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NodeStatusProperty =
+            DependencyProperty.Register("NodeStatus", typeof(NodeStatus), typeof(Node),
+                new FrameworkPropertyMetadata(NodeStatus.None, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
 
-        public bool IsProcessed
+        public int RouteCost
         {
-            get { return (bool)GetValue(IsProcessedProperty); }
-            set { SetValue(IsProcessedProperty, value); }
+            get { return (int)GetValue(RouteCostProperty); }
+            set { SetValue(RouteCostProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for IsProcessed.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IsProcessedProperty =
-            DependencyProperty.Register("IsProcessed", typeof(bool), typeof(Node),
-                new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsMeasure));
+        // Using a DependencyProperty as the backing store for RouteCost.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty RouteCostProperty =
+            DependencyProperty.Register("RouteCost", typeof(int), typeof(Node), 
+                new FrameworkPropertyMetadata(int.MaxValue, FrameworkPropertyMetadataOptions.AffectsMeasure));
+
 
 
         public Brush StrokeBrush
@@ -112,7 +117,10 @@ namespace GraphSimulator.User_Controls
 
         private void Node_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            IsSelected = !IsSelected; 
+            if (IsSelected)
+                NodeStatus = NodeStatus.None;
+            else
+                NodeStatus = NodeStatus.IsSelected;
         }
 
         private void Node_MouseMove(object sender, MouseEventArgs e)
