@@ -1,9 +1,7 @@
 ﻿using GraphSimulator.User_Controls;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,65 +24,146 @@ namespace GraphSimulator.Helpers
                 return _instance;
             }
         }
-        
-        public List<Connection> Connections { get; set; } = new List<Connection>();
-        public List<Node> Nodes { get; set; } = new List<Node>();
 
+        public List<Connection> Connections { get; set; } = new List<Connection>();
+        public Dictionary<char, Node> Nodes { get; set; } = new Dictionary<char, Node>();
+        public List<Action> Actions { get; set; }
+        public int SelectingAlgorithm { get; set; }
 
         public Dictionary<char, Route> RunDijsktra(Node startNode)
         {
-            var shortestPaths = Helper.InitResults(startNode.Identity, Nodes.Select(n => n.Identity), Connections);
-            var queueProcessingNode = new Queue<char>();
-            queueProcessingNode.Enqueue(startNode.Identity);
+            var shortestPaths = Helper.InitResults(startNode.Identity, Nodes.Select(p => p.Key), Connections);         // Initialisation
+            startNode.RouteCost = 0;
 
-            while (queueProcessingNode.Count != 0)
-            { 
-                var nodeToProcess = queueProcessingNode.Dequeue();
-                //Nodes.FirstOrDefault(n => n.Identity == nodeToProcess).IsProcessed = true;
+            var queue = new Queue<char>();
+            queue.Enqueue(startNode.Identity);
+
+            while (queue.Count != 0)
+            {
+                if (queue.Count > 1)
+                {
+                    queue = new Queue<char>(shortestPaths.Where(pair => queue.Contains(pair.Key))
+                                                          .OrderBy(pair => pair.Value.RouteCost)
+                                                          .Select(pair => pair.Key));
+                }
+                var nodeToProcess = queue.Dequeue();                                                                 // Process next node
+
                 var neighbors = Connections
                     .Where(c => c.StartNode == nodeToProcess || (c.DestNode == nodeToProcess && c.IsTwoWay));
 
                 foreach (var item in neighbors)
                 {
-                    var route = shortestPaths[item.DestNode];
+                    var curNeighboringNode = item.DestNode;                                                                    // Inspect the neighbors of the current node.
+                    var route = shortestPaths[curNeighboringNode];
                     if (route.RouteCost > item.Cost + shortestPaths[nodeToProcess].RouteCost)
                     {
+                        //foreach (var p in route.Paths)
+                        //{
+                        //    p.IsSelected = false;
+                        //}
                         route.Paths = new List<Connection>(shortestPaths[nodeToProcess].Paths)
                         {
                             item
                         };
-                        route.RouteCost = item.Cost + shortestPaths[nodeToProcess].RouteCost;
+                        Nodes[curNeighboringNode].RouteCost = route.RouteCost = item.Cost + shortestPaths[nodeToProcess].RouteCost;
+
+                        //foreach (var p in route.Paths)
+                        //{
+                        //    p.IsSelected = true;
+                        //}
+
+                        if (Nodes[curNeighboringNode].NodeStatus == NodeStatus.Processed || queue.Contains(curNeighboringNode))
+                            continue;
+                        queue.Enqueue(curNeighboringNode);
                     }
-                    queueProcessingNode.Enqueue(item.DestNode);
                 }
+                Nodes[nodeToProcess].NodeStatus = NodeStatus.Processed;
+            }
+
+            foreach (var item in shortestPaths.Select(p => p.Value)
+                                                .Select(r => r.Paths)
+                                                .SelectMany(c => c).Distinct())
+            {
+                item.IsSelected = true;
             }
 
             return shortestPaths;
         }
-    }
-
-    public class Route : INotifyPropertyChanged
-    {
-        private List<Connection> _path = new List<Connection>();
-
-        public char DestNode { get; set; }
-        public int RouteCost { get; set; } = int.MaxValue;
-        public List<Connection> Paths
+        public Dictionary<char, Route> RunDijsktraWithTimer(Node startNode)
         {
-            get => _path;
-            set
+            if (Actions is null)
+                Actions = new List<Action>();
+
+            Actions.Add(() => startNode.NodeStatus = NodeStatus.IsSelected);
+
+            var shortestPaths = Helper.InitResults(startNode.Identity, Nodes.Select(p => p.Key), Connections);
+
+            var queue = new Queue<char>();
+            queue.Enqueue(startNode.Identity);
+
+            var handledNodes = new List<char>();
+            
+            Actions.Add(() =>
             {
-                _path = value;
-                OnPropertyChanged(nameof(Paths));
+                startNode.RouteCost = 0;
+                startNode.NodeStatus = NodeStatus.Processed;
+            });                                                            // Initialisation
+
+            while (queue.Count != 0)
+            {
+                if (queue.Count > 1)
+                {
+                    queue = new Queue<char>(shortestPaths.Where(pair => queue.Contains(pair.Key))
+                                                          .OrderBy(pair => pair.Value.RouteCost)
+                                                          .Select(pair => pair.Key));
+                }
+                var nodeToProcess = queue.Dequeue();                                                                 
+
+                Actions.Add(() => Nodes[nodeToProcess].NodeStatus = NodeStatus.IsBeingProcessed);         // Process next node
+
+                var neighbors = Connections
+                    .Where(c => c.StartNode == nodeToProcess || (c.DestNode == nodeToProcess && c.IsTwoWay));
+
+                foreach (var item in neighbors)
+                {
+                    Actions.Add(() => item.ConnectionStatus = ConnectionStatus.IsInspecting);                                                                          // Inspect the neighbors of the current node.
+
+                    var curNeighboringNode = item.DestNode;                                                                    
+                    var route = shortestPaths[curNeighboringNode];
+                    if (route.RouteCost > item.Cost + shortestPaths[nodeToProcess].RouteCost)
+                    {
+                        foreach (var p in route.Paths)
+                        {
+                            p.IsSelected = false;
+                        }
+                        route.Paths = new List<Connection>(shortestPaths[nodeToProcess].Paths)
+                        {
+                            item
+                        };
+                        Nodes[curNeighboringNode].RouteCost = route.RouteCost = item.Cost + shortestPaths[nodeToProcess].RouteCost;
+
+                        //////////// có thể có lỗi
+                        Actions.Add(() =>
+                        {
+                            foreach (var conn in route.Paths)
+                            {
+                                conn.ConnectionStatus = ConnectionStatus.IsSelected;
+                            }
+                        });
+                    }
+
+
+                    if (handledNodes.Contains(curNeighboringNode) || queue.Contains(curNeighboringNode))
+                        continue;
+
+                    Actions.Add(() => Nodes[curNeighboringNode].NodeStatus = NodeStatus.IsInQueue);
+                    queue.Enqueue(curNeighboringNode);
+                }
+                handledNodes.Add(nodeToProcess);
+                Actions.Add(() => Nodes[nodeToProcess].NodeStatus = NodeStatus.Processed);
             }
-        }
-        public char PreviousNode => Paths.Count == 0 ? '-' : Paths.LastOrDefault().StartNode;
 
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return shortestPaths;
         }
     }
 }
