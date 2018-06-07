@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GraphSimulator.Helpers
+﻿namespace GraphSimulator.Helpers
 {
     public enum RunningMode
     {
@@ -25,5 +19,21 @@ namespace GraphSimulator.Helpers
     {
         ADD,
         DELETE
+    }
+
+    public enum NodeStatus
+    {
+        None,
+        IsSelected,
+        IsInQueue,
+        IsBeingProcessed,
+        Processed
+    }
+
+    public enum ConnectionStatus
+    {
+        None,
+        IsSelected,
+        IsInspecting
     }
 }
