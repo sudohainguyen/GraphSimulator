@@ -6,31 +6,46 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <SolidColorBrush x:Key="UNSELECTED_FILL_BRUSH">#98c6ea</SolidColorBrush>
-        <SolidColorBrush x:Key="SELECTED_FILL_BRUSH">#c15757</SolidColorBrush>
         <SolidColorBrush x:Key="UNSELECTED_STROKE_BRUSH">#0065bd</SolidColorBrush>
-        <SolidColorBrush x:Key="SELECTED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
         <SolidColorBrush x:Key="UNSELECTED_IDENTIFIER_BRUSH">#000000</SolidColorBrush>
+
+        <SolidColorBrush x:Key="SELECTED_FILL_BRUSH">#c15757</SolidColorBrush>
+        <SolidColorBrush x:Key="SELECTED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
         <SolidColorBrush x:Key="SELECTED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
-        <SolidColorBrush x:Key="PROCESSED_FILL_BRUSH"></SolidColorBrush>
+        
+        <SolidColorBrush x:Key="IN_QUEUE_FILL_BRUSH">#FFF86E</SolidColorBrush>
+        <SolidColorBrush x:Key="IN_QUEUE_STROKE_BRUSH">#f4a949</SolidColorBrush>
+        
+        <SolidColorBrush x:Key="PROCESSED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
+        <SolidColorBrush x:Key="PROCESSED_FILL_BRUSH">#c15757</SolidColorBrush>
+        <SolidColorBrush x:Key="PROCESSED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
+        
+        <SolidColorBrush x:Key="BEING_PROCESSED_FILL_BRUSH">#6DBB88</SolidColorBrush>
         
         <Style TargetType="us:Node">
             <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="StrokeBrush" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
-                    <Setter Property="IdentifierBrush" Value="{DynamicResource SELECTED_IDENTIFIER_BRUSH}"/>
-                    <Setter Property="FillBrush" Value="{DynamicResource SELECTED_FILL_BRUSH}"/>
-                </Trigger>
-                <Trigger Property="IsSelected" Value="False">
+                <Trigger Property="NodeStatus" Value="None">
                     <Setter Property="StrokeBrush" Value="{DynamicResource UNSELECTED_STROKE_BRUSH}"/>
                     <Setter Property="IdentifierBrush" Value="{DynamicResource UNSELECTED_IDENTIFIER_BRUSH}"/>
                     <Setter Property="FillBrush" Value="{DynamicResource UNSELECTED_FILL_BRUSH}"/>
                 </Trigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsProcessed" Value="True"/>
-                    </MultiTrigger.Conditions>
+                <Trigger Property="NodeStatus" Value="Processed">
                     <Setter Property="FillBrush" Value="{DynamicResource PROCESSED_FILL_BRUSH}"/>
-                </MultiTrigger>
+                    <Setter Property="IdentifierBrush" Value="{DynamicResource PROCESSED_IDENTIFIER_BRUSH}"/>
+                    <Setter Property="StrokeBrush" Value="{DynamicResource PROCESSED_STROKE_BRUSH}"/>
+                </Trigger>
+                <Trigger Property="NodeStatus" Value="IsSelected">
+                    <Setter Property="FillBrush" Value="{DynamicResource SELECTED_FILL_BRUSH}"/>
+                    <Setter Property="IdentifierBrush" Value="{DynamicResource SELECTED_IDENTIFIER_BRUSH}"/>
+                    <Setter Property="StrokeBrush" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
+                </Trigger>
+                <Trigger Property="NodeStatus" Value="IsInQueue">
+                    <Setter Property="FillBrush" Value="{DynamicResource IN_QUEUE_FILL_BRUSH}"/>
+                    <Setter Property="StrokeBrush" Value="{DynamicResource IN_QUEUE_STROKE_BRUSH}"/>
+                </Trigger>
+                <Trigger Property="NodeStatus" Value="IsBeingProcessed">
+                    <Setter Property="FillBrush" Value="{DynamicResource BEING_PROCESSED_FILL_BRUSH}"/>
+                </Trigger>
             </Style.Triggers>
         </Style>
 
