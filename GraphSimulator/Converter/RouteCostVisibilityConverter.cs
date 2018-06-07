@@ -1,18 +1,22 @@
-﻿using System;
+﻿using GraphSimulator.Helpers;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 
 namespace GraphSimulator.Converter
 {
-    public class RouteCostConverter : IValueConverter
+    public class RouteCostVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int cost)
+            if (value is NodeStatus s)
             {
-                if (cost == int.MaxValue)
-                    return '∞';
-                return cost;
+                return s == NodeStatus.Processed ? Visibility.Visible : Visibility.Collapsed;
             }
             return null;
         }
