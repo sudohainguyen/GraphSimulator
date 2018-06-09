@@ -5,6 +5,34 @@
              xmlns:us="clr-namespace:GraphSimulator.User_Controls"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <LinearGradientBrush x:Key="GradientBrushTabControlHeader" StartPoint="0.5, 0" EndPoint="0.5, 1">
+            <GradientStop Color="#002E8A" Offset="0" />
+            <GradientStop Color="#0071B7" Offset="0.5" />
+            <GradientStop Color="#002E8A" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GradientBrushSegmentedTabItem" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#4C8BC0" Offset="0" />
+            <GradientStop Color="#015CA3" Offset="0.49" />
+            <GradientStop Color="#024795" Offset="0.50" />
+            <GradientStop Color="#2C5198" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GradientBrushSegmentedActiveTabItem" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#000098" Offset="0" />
+            <GradientStop Color="#000075" Offset="0.33" />
+            <GradientStop Color="#000075" Offset="0.66" />
+            <GradientStop Color="#000082" Offset="1" />
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="NiceButtonBackGroundBrush">
+            <GradientStop Color="#4C8BC0" Offset="0" />
+            <GradientStop Color="#013CA3" Offset="0.45" />
+            <GradientStop Color="#024795" Offset="0.65" />
+            <GradientStop Color="#2C5198" Offset="1" />
+        </LinearGradientBrush>
+
+        <SolidColorBrush x:Key="NormalButtonBrushInForm" Color="#015CA3"/>
+        <SolidColorBrush x:Key="HoverButtonBrushInForm" Color="#F0F9A825"/>
+
         <SolidColorBrush x:Key="UNSELECTED_FILL_BRUSH">#98c6ea</SolidColorBrush>
         <SolidColorBrush x:Key="UNSELECTED_STROKE_BRUSH">#0065bd</SolidColorBrush>
         <SolidColorBrush x:Key="UNSELECTED_IDENTIFIER_BRUSH">#000000</SolidColorBrush>
@@ -19,9 +47,15 @@
         <SolidColorBrush x:Key="PROCESSED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
         <SolidColorBrush x:Key="PROCESSED_FILL_BRUSH">#c15757</SolidColorBrush>
         <SolidColorBrush x:Key="PROCESSED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
-        
+
         <SolidColorBrush x:Key="BEING_PROCESSED_FILL_BRUSH">#6DBB88</SolidColorBrush>
-        
+
+        <SolidColorBrush x:Key="ComboBoxNormalBorderBrush" Color="#024795" />
+        <SolidColorBrush x:Key="ComboBoxNormalBackgroundBrush" Color="#fff" />
+        <SolidColorBrush x:Key="ComboBoxDisabledForegroundBrush" Color="#888" />
+        <SolidColorBrush x:Key="ComboBoxDisabledBackgroundBrush" Color="#eee" />
+        <SolidColorBrush x:Key="ComboBoxDisabledBorderBrush" Color="#888" />
+
         <Style TargetType="us:Node">
             <Style.Triggers>
                 <Trigger Property="NodeStatus" Value="None">
@@ -50,15 +84,18 @@
         </Style>
 
         <Style TargetType="us:Connection">
-            <Setter Property="Stroke" Value="Black"/>
+            <Setter Property="Stroke" Value="#232323"/>
             <Setter Property="StrokeThickness" Value="2.5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
+                <Trigger Property="ConnectionStatus" Value="None">
+                    <Setter Property="Stroke" Value="#232323"/>
+                </Trigger>
+                <Trigger Property="ConnectionStatus" Value="IsSelected">
                     <Setter Property="Stroke" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
                 </Trigger>
-                <Trigger Property="IsSelected" Value="False">
-                    <Setter Property="Stroke" Value="Black"/>
+                <Trigger Property="ConnectionStatus" Value="IsInspecting">
+                    <Setter Property="Stroke" Value="{DynamicResource IN_QUEUE_STROKE_BRUSH}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
