@@ -43,7 +43,7 @@
         <TextBlock HorizontalAlignment="Center"
                    FontWeight="DemiBold"
                    Foreground="{StaticResource PROCESSED_STROKE_BRUSH}"
-                   Visibility="{Binding NodeStatus, Converter={StaticResource RouteCostVisibilityConverter}}"
+                   Visibility="{Binding RouteCost, Converter={StaticResource RouteCostVisibilityConverter}}"
                    Text="{Binding RouteCost, Converter={StaticResource RouteCostConverter}}"/>
     </StackPanel>
 

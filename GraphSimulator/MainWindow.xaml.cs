@@ -3,23 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Runtime.CompilerServices;
 using GraphSimulator.Helpers;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using Microsoft.Win32;
 using System.IO;
+using System.Windows.Threading;
+using GraphSimulator.Helpers.AlgorithmHelpers;
 
 namespace GraphSimulator
 {
@@ -28,18 +22,27 @@ namespace GraphSimulator
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private bool _isCreatingConnection = false;
+        private const float MAX_TIMESPAN = 2.5f;
+
+        #region Fields
         private bool _isDirectedGraph = false;
-        private bool _isRandomCost = false;
         private int _numberOfNode = 0;
+        private int _curStep = -1;
+        private bool _isPause = true;
+        private bool _canEditGraph = true;
 
-        private RunningMode _runningMode = RunningMode.ShowTheResult;
+        private DispatcherTimer _timer;
 
-        private Random _randCost = new Random();
+        private Random _randCost;
         private Node _startNode;
         private Stack<(Operation operation, IEnumerable<UIElement> controls)> _operationStack = new Stack<(Operation, IEnumerable<UIElement>)>();
-        private ObservableCollection<Route> _routes = new ObservableCollection<Route>();
+        private ObservableCollection<Route> _routes;
 
+        #endregion
+
+        #region Properties
+        public RunningMode RunMode { get; set; } = RunningMode.ShowTheResult;
+        public IAlgorithm Algorithm { get; set; } = new DijsktraAlgorithm();
         public ObservableCollection<Route> Routes
         {
             get => _routes;
@@ -50,27 +53,31 @@ namespace GraphSimulator
             }
         }
 
-        public bool IsCreatingConnection
+        public bool IsCreatingConnection { get; set; } = false;
+
+        public bool IsRandomCost { get; set; } = false;
+
+        public bool IsPause
         {
-            get => _isCreatingConnection;
+            get => _isPause;
             set
             {
-                _isCreatingConnection = value;
-                OnPropertyChanged(nameof(IsCreatingConnection));
+                _isPause = value;
+                OnPropertyChanged(nameof(IsPause));
             }
         }
 
-        public bool IsRandomCost
+        public bool CanEditGraph
         {
-            get => _isRandomCost;
+            get => _canEditGraph;
             set
             {
-                _isRandomCost = value;
-                OnPropertyChanged(nameof(IsRandomCost));
+                _canEditGraph = value;
+                OnPropertyChanged(nameof(CanEditGraph));
             }
         }
 
-        public bool I { get; set; }
+        #endregion
 
         public MainWindow()
         {
@@ -114,67 +121,78 @@ namespace GraphSimulator
                         AddNewNode(targetNode);
                         _operationStack.Push((Operation.ADD, new List<UIElement>() { targetNode }));
                     }
-                    else if (targetNode.Identity == _startNode.Identity) return;
-
-                    var newCon = new Connection(_isDirectedGraph, _startNode, targetNode);
-
-                    if (IsRandomCost)
+                    else if (targetNode.Identity == _startNode.Identity)
                     {
-                        newCon.Cost = _randCost.Next(1, 30);
+                        _startNode = null;
+                        return;
                     }
-                    else
+
+                    if (_isDirectedGraph && RouteEngine.Instance.Connections
+                                                .FirstOrDefault(c => c.StartNode == targetNode.Identity && c.DestNode == _startNode.Identity)
+                                                is Connection con)
                     {
-                        new SubWindows.CostInputWindow
+                        //TODO: Seperate a two-way connection to 2 one-way connections ?
+                        con.ArrowDirection = Direction.TwoWay;
+                        var tblReCost = AddReverseCost(con);
+                        _operationStack.Push((Operation.UPDATE, new List<UIElement>() { tblReCost, con }));
+                        if (IsRandomCost)
                         {
-                            Ok = cost =>
+                            if (_randCost is null) _randCost = new Random();
+                            con.ReverseCost = _randCost.Next(1, 30);
+                        }
+                        else
+                        {
+                            new SubWindows.CostInputWindow
                             {
-                                newCon.Cost = cost;  
-                            },
-                            Owner = this
-                    }.ShowDialog();
-                    }
-                    if (newCon.Cost == -1)
-                    {
-                        newCon = null;
+                                Ok = cost =>
+                                {
+                                    con.ReverseCost = cost;
+                                },
+                                Owner = this
+                            }.ShowDialog();
+                        }
                     }
                     else
                     {
-                        var tblCost = AddNewConnection(newCon);
-                        _operationStack.Push((Operation.ADD, new List<UIElement>() { newCon, tblCost }));
+                        var newCon = new Connection(_isDirectedGraph, _startNode, targetNode);
+                        if (IsRandomCost)
+                        {
+                            if (_randCost is null) _randCost = new Random();
+                            newCon.Cost = _randCost.Next(1, 30);
+                        }
+                        else
+                        {
+                            new SubWindows.CostInputWindow
+                            {
+                                Ok = cost =>
+                                {
+                                    newCon.Cost = cost;
+                                },
+                                Owner = this
+                            }.ShowDialog();
+                        }
+                        if (newCon.Cost == -1)
+                        {
+                            newCon = null;
+                        }
+                        else
+                        {
+                            var tblCost = AddNewConnection(newCon);
+                            _operationStack.Push((Operation.ADD, new List<UIElement>() { newCon, tblCost }));
+                        }
                     }
-
-                    _startNode.IsSelected = targetNode.IsSelected = false;
+                    
+                    _startNode.NodeStatus = targetNode.NodeStatus = NodeStatus.None;
                     _startNode = null;
                 }
             }
-        }
-
-        private bool IsOverlapExistedNode(Point clickPos)
-        {
-            return GraphContainer.Children.OfType<Node>()
-                .FirstOrDefault(node =>
-                {
-                    var d = Node.Diameter;
-                    return clickPos.X >= (node.X - d) && clickPos.Y >= (node.Y - d) && clickPos.X <= (node.X + d) && clickPos.Y <= (node.Y + d);
-                }) is Node;
-        }
-
-        private bool GetNodeAtCurrentClickPosition(Point clickPos, out Node n)
-        {
-            n = GraphContainer.Children.OfType<Node>()
-                .FirstOrDefault(node =>
-                {
-                    var d = Node.Diameter;
-                    return clickPos.X >= (node.X - d) && clickPos.Y >= (node.Y - d) && clickPos.X <= (node.X + d) && clickPos.Y <= (node.Y + d);
-                });
-            return n is Node;
         }
 
         private void GraphContainer_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
             {
-                var nodesToDel = GraphContainer.Children.Cast<Node>()
+                var nodesToDel = GraphContainer.Children.OfType<Node>()
                     .Where(node => node.IsSelected).ToList();
                 if (nodesToDel.Count() == 0)
                     return;
@@ -184,6 +202,8 @@ namespace GraphSimulator
                 foreach (var item in nodesToDel)
                 {
                     GraphContainer.Children.Remove(item);
+                    RouteEngine.Instance.Nodes.Remove(item.Identity);
+                    _numberOfNode--;
                 }
             }
             else if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
@@ -191,20 +211,55 @@ namespace GraphSimulator
                 if (_operationStack.Count == 0)
                     return;
                 var (operation, controls) = _operationStack.Pop();
-                if (operation == Operation.ADD)
+                switch (operation)
                 {
-                    foreach (var c in controls)
-                    {
-                        GraphContainer.Children.Remove(c);
-                        _numberOfNode--;
-                    }
-                }
-                else
-                {
-                    foreach (var c in controls)
-                    {
-                        GraphContainer.Children.Add(c);
-                    }
+                    case Operation.ADD:
+                        {
+                            foreach (var c in controls)
+                            {
+                                GraphContainer.Children.Remove(c);
+                                if (c is Node n)
+                                {
+                                    RouteEngine.Instance.Nodes.Remove(n.Identity);
+                                    _numberOfNode--;
+                                }
+                                else if (c is Connection con)
+                                {
+                                    RouteEngine.Instance.Connections.Remove(con);
+                                }
+                            }
+                            break;
+                        }
+                    case Operation.UPDATE:
+                        {
+                            foreach (var c in controls)
+                            {
+                                if (c is Connection con)
+                                    con.ArrowDirection = Direction.OneWay;
+                                else if (c is TextBlock tbl)
+                                    GraphContainer.Children.Remove(tbl);
+                            }
+                            break;
+                        }
+                    case Operation.DELETE:
+                        {
+                            foreach (var c in controls)
+                            {
+                                GraphContainer.Children.Add(c);
+                                if (c is Node n)
+                                {
+                                    RouteEngine.Instance.Nodes.Add(n.Identity, n);
+                                    _numberOfNode++;
+                                }
+                                else if (c is Connection con)
+                                {
+                                    RouteEngine.Instance.Connections.Add(con);
+                                }
+                            }
+                            break;
+                        }
+                    default:
+                        break;
                 }
             }
             else if (e.Key == Key.S && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
@@ -227,6 +282,113 @@ namespace GraphSimulator
             NewWorkspace();
         }
 
+        private void Button_Run_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedNodes = GraphContainer.Children.OfType<Node>().Where(n => n.IsSelected);
+            if ((selectedNodes.Count() & 1) != 1)
+            {
+                MessageBox.Show("Please select only one node to run the algorithm");
+                return;
+            }
+            Routes = new ObservableCollection<Route>();
+
+            var root = selectedNodes.ElementAt(0);
+            if (Algorithm is PrimAlgorithm)
+                Helper.ToUndirectedGraph();
+            switch (RunMode)
+            {
+                case RunningMode.ShowTheResult:
+                    {
+                        Routes = new ObservableCollection<Route>(Algorithm.ShowResult(root));
+                        break;
+                    }
+                case RunningMode.StepByStep:
+                    {
+                        Routes = new ObservableCollection<Route>(Algorithm.ExtractStepsWithResult(root));
+                        MessageBox.Show(@"Press 'next' button to go next step");
+                        break;
+                    }
+                case RunningMode.Visualization:
+                    {
+                        Routes = new ObservableCollection<Route>(Algorithm.ExtractStepsWithResult(root));
+                        _timer = new DispatcherTimer
+                        {
+                            Interval = TimeSpan.FromSeconds(MAX_TIMESPAN - slSpeed.Value)
+                        };
+                        _timer.Start();
+                        _timer.Tick += Tick;
+                        IsPause = false;
+                        break;
+                    }
+                default:
+                    break;
+            }
+        }
+
+        private void Button_Save_Click(object sender, RoutedEventArgs e)
+        {
+            if (SaveWorkspace(out var err))
+                MessageBox.Show("Saved successfully");
+            else
+                MessageBox.Show(err);
+        }
+
+        private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            foreach (var item in GraphContainer.Children.OfType<UIElement>())
+            {
+                if (item is Node n) n.NodeStatus = NodeStatus.None;
+                else if (item is Connection con) con.ConnectionStatus = ConnectionStatus.None;
+            }
+            if (dataGrid.CurrentItem is Route r)
+            {
+                RouteEngine.Instance.Nodes[r.Paths[0].StartNode].NodeStatus = NodeStatus.IsSelected;
+                foreach (var con in r.Paths)
+                {
+                    con.ConnectionStatus = ConnectionStatus.IsSelected;
+                    RouteEngine.Instance.Nodes[con.DestNode].NodeStatus = NodeStatus.IsSelected;
+                }
+            }
+        }
+
+        private void Button_Load_Click(object sender, RoutedEventArgs e)
+        {
+            OpenWorkspace();
+        }
+
+        private void Button_Open_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void slSpeed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            _timer.Interval = TimeSpan.FromSeconds(MAX_TIMESPAN - e.NewValue);
+        }
+
+        #region Private methods
+
+        private bool IsOverlapExistedNode(Point clickPos)
+        {
+            return GraphContainer.Children.OfType<Node>()
+                .FirstOrDefault(node =>
+                {
+                    var d = Node.Diameter;
+                    return clickPos.X >= (node.X - d) && clickPos.Y >= (node.Y - d) && clickPos.X <= (node.X + d) && clickPos.Y <= (node.Y + d);
+                }) is Node;
+        }
+
+        private bool GetNodeAtCurrentClickPosition(Point clickPos, out Node n)
+        {
+            n = GraphContainer.Children.OfType<Node>()
+                .FirstOrDefault(node =>
+                {
+                    var d = Node.Diameter;
+                    return clickPos.X >= (node.X - d) && clickPos.Y >= (node.Y - d) && clickPos.X <= (node.X + d) && clickPos.Y <= (node.Y + d);
+                });
+            return n is Node;
+        }
+
         private void NewWorkspace()
         {
             ResetWorkspace();
@@ -240,16 +402,12 @@ namespace GraphSimulator
             }.ShowDialog();
 
             if (selection is null)
-            {
-                coveringPanel.Visibility = Visibility.Visible;
-                GraphContainer.IsEnabled = false;
                 return;
-            }
 
             _isDirectedGraph = !selection.Value;
 
             coveringPanel.Visibility = Visibility.Collapsed;
-            GraphContainer.IsEnabled = true;
+            CanEditGraph = true;
         }
 
         private void OpenWorkspace()
@@ -283,7 +441,7 @@ namespace GraphSimulator
 
             ResetWorkspace();
             coveringPanel.Visibility = Visibility.Collapsed;
-            GraphContainer.IsEnabled = true;
+            //GraphContainer.IsEnabled = true;
 
             foreach (var n in nodesdata)
             {
@@ -297,8 +455,8 @@ namespace GraphSimulator
             }
             foreach (var c in consdata)
             {
-                var start = RouteEngine.Instance.Nodes.FirstOrDefault(n => n.Identity == c.Start);
-                var dest = RouteEngine.Instance.Nodes.FirstOrDefault(n => n.Identity == c.Dest);
+                var start = RouteEngine.Instance.Nodes[c.Start];
+                var dest = RouteEngine.Instance.Nodes[c.Dest];
                 var newCon = new Connection(_isDirectedGraph, start, dest)
                 {
                     Cost = c.Cost,
@@ -320,7 +478,7 @@ namespace GraphSimulator
         private bool SaveWorkspace(out string err)
         {
             err = null;
-            var nodes = RouteEngine.Instance.Nodes;
+            var nodes = RouteEngine.Instance.Nodes.Select(p => p.Value);
             var cons = RouteEngine.Instance.Connections;
 
             if (nodes.Count() == 0 && cons.Count() == 0)
@@ -372,13 +530,14 @@ namespace GraphSimulator
                 return false;
             }
             File.WriteAllText(dialog.FileName, encodedData);
+            File.SetAttributes(dialog.FileName, FileAttributes.ReadOnly);
 
             return true;
         }
 
         private void AddNewNode(Node newNode)
         {
-            RouteEngine.Instance.Nodes.Add(newNode);
+            RouteEngine.Instance.Nodes.Add(newNode.Identity, newNode);
             GraphContainer.Children.Add(newNode);
             Canvas.SetLeft(newNode, newNode.X - Node.Radius);
             Canvas.SetTop(newNode, newNode.Y - Node.Radius);
@@ -409,49 +568,38 @@ namespace GraphSimulator
             return tblCost;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private TextBlock AddReverseCost(Connection curConn)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            var tblCost = new TextBlock
+            {
+                Text = curConn.ReverseCost.ToString(),
+                FontSize = 17,
+                FontWeight = FontWeights.DemiBold
+            };
+            var pointForTbl = Helper.CalPointForTextBlockCost(new Point(curConn.X2, curConn.Y2), new Point(curConn.X1, curConn.Y1));
+            Canvas.SetLeft(tblCost, pointForTbl.X - 10);
+            Canvas.SetTop(tblCost, pointForTbl.Y - 10);
+            GraphContainer.Children.Add(tblCost);
+
+            return tblCost;
         }
 
-        private void Button_Run_Click(object sender, RoutedEventArgs e)
+        private void Tick(object obj, EventArgs e)
         {
-            var selectedNodes = GraphContainer.Children.OfType<Node>().Where(n => n.IsSelected);
-            if ((selectedNodes.Count() & 1) != 1)
+            _curStep++;
+            RouteEngine.Instance.Actions[_curStep]();
+            if (_curStep.Equals(RouteEngine.Instance.Actions.Count - 1))
             {
-                MessageBox.Show("Please select only one node to run the algorithm");
-                return;
-            }
-
-            var root = selectedNodes.ElementAt(0);
-
-            var dict = RouteEngine.Instance.RunDijsktra(root);
-            Routes = new ObservableCollection<Route>(dict.Values);
-        }
-
-        private void Button_Save_Click(object sender, RoutedEventArgs e)
-        {
-            if (!SaveWorkspace(out var err))
-                MessageBox.Show(err);
-        }
-
-        private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            foreach (var item in GraphContainer.Children.OfType<UIElement>())
-            {
-                if (item is Node n) n.IsSelected = false;
-                else if (item is Connection con) con.IsSelected = false;
-            }
-            if (dataGrid.CurrentItem is Route r)
-            {
-                foreach (var con in r.Paths)
-                {
-                    con.IsSelected = true;
-                    RouteEngine.Instance.Nodes.FirstOrDefault(n => n.Identity == con.DestNode).IsSelected = true;
-                }
+                _timer.Tick -= Tick;
+                _timer.Stop();
+                IsPause = false;
+                MessageBox.Show("Finished");
             }
         }
+
+        #endregion
+
+        #region Nested Classes
 
         private class NodeData
         {
@@ -467,10 +615,46 @@ namespace GraphSimulator
             public int Dir { get; set; }
             public int Cost { get; set; }
         }
+        #endregion
 
-        private void Button_Open_Click(object sender, RoutedEventArgs e)
+        #region Property changed
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            OpenWorkspace();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        #endregion
+
+        private void Button_Next_Click(object sender, RoutedEventArgs e)
+        {
+            if (_curStep != RouteEngine.Instance.Actions.Count - 1)
+            {
+                _curStep++;
+                btnBack.IsEnabled = true;
+            }
+            else
+            {
+                btnNext.IsEnabled = false;
+            }
+            RouteEngine.Instance.Actions[_curStep]();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            Routes[1].RouteCost = 333;
+        }
+
+        private void Button_Play_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsPause)
+            {
+                _timer.Stop();
+            }
+            else
+            {
+                _timer.Start();
+            }
         }
     }
 }

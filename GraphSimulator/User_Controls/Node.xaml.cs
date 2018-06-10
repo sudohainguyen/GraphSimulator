@@ -73,7 +73,7 @@ namespace GraphSimulator.User_Controls
         // Using a DependencyProperty as the backing store for RouteCost.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RouteCostProperty =
             DependencyProperty.Register("RouteCost", typeof(int), typeof(Node), 
-                new FrameworkPropertyMetadata(int.MaxValue, FrameworkPropertyMetadataOptions.AffectsMeasure));
+                new FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
 
 

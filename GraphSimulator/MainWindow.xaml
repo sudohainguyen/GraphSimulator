@@ -10,86 +10,182 @@
         Title="MainWindow" Height="700" Width="1000"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
-        ResizeMode="NoResize">
+        ResizeMode="CanResize">
     <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="5*"/>
+            <RowDefinition Height="1.2*"/>
+            <RowDefinition Height="4*"/>
         </Grid.RowDefinitions>
         <Grid.Resources>
             <ResourceDictionary>
                 <ResourceDictionary.MergedDictionaries>
                     <ResourceDictionary Source="./Styles/AppStyle.xaml"/>
+                    <ResourceDictionary Source="./Styles/CustomTab.xaml"/>
                 </ResourceDictionary.MergedDictionaries>
             </ResourceDictionary>
         </Grid.Resources>
-        <TabControl Grid.Row="0">
-            <TabItem Header="Create graph">
-                <StackPanel Orientation="Horizontal">
+        <TabControl Grid.Row="0" Style="{StaticResource StyleTabControl}">
+            <TabItem Style="{StaticResource StyleTabItemLeft}">
+                <TabItem.Header>
+                    <TextBlock Text="Create graph" Style="{StaticResource StyleHeaderText}"/>
+                </TabItem.Header>
+                <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
                     <Button Content="New" 
                             Click="Button_New_Click"
-                            Style="{StaticResource ButtonTool}"/>
-                    <Button Content="Open" Grid.Column="1"
-                            Style="{StaticResource ButtonTool}"
+                            Width="120"
+                            Margin="10,10"
+                            Style="{StaticResource NiceButton}"/>
+                    <Button Content="Open samples" Grid.Column="1"
+                            Style="{StaticResource NiceButton}"
+                            Width="120"
+                            Margin="10,10"
                             Click="Button_Open_Click"/>
-                    <Button Content="Save" Grid.Column="2" 
-                            Style="{StaticResource ButtonTool}"
+                    <Button Content="Load from file"
+                            Width="120"
+                            Margin="10,10"
+                            Style="{StaticResource NiceButton}"
+                            Click="Button_Load_Click"/>
+                    <Button Content="Save" Grid.Column="2"
+                            Width="120"
+                            Margin="10,10"
+                            Style="{StaticResource NiceButton}"
                             Click="Button_Save_Click"/>
                     <StackPanel VerticalAlignment="Stretch"
-                                Width="100" Margin="10,10">
+                                Width="Auto" Margin="10,10,10,5">
+                        <TextBlock Text="Add connection"
+                                   FontWeight="DemiBold"
+                                   FontSize="13"/>
                         <ToggleButton 
-                            Content="Add connection" 
+                            Style="{StaticResource ToggleButtonStyle}"
                             Grid.Column="3"
+                            Width="120"
+                            HorizontalAlignment="Center"
                             IsChecked="{Binding IsCreatingConnection}"
-                            />
+                            Margin="0,5"/>
                         <CheckBox Content="Random cost"
+                                  Style="{StaticResource CheckBoxStyle}"
                                   IsChecked="{Binding IsRandomCost}"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Run algorithms">
-                <StackPanel Orientation="Horizontal">
+            <TabItem Style="{StaticResource StyleTabItemDefault}">
+                <TabItem.Header>
+                    <TextBlock Text="Run algorithms" Style="{StaticResource StyleHeaderText}"/>
+                </TabItem.Header>
+                <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
+                    <StackPanel.Resources>
+                        <converter:AlgorithmConverter x:Key="AlgoConverter"/>
+                    </StackPanel.Resources>
                     <ComboBox VerticalAlignment="Center" 
                               Width="150" 
-                              SelectedIndex="0"
-                              Margin="10,0,30,0">
+                              SelectedIndex="{Binding Algorithm, Converter={StaticResource AlgoConverter}}"
+                              Margin="10,0,30,0"
+                              Style="{StaticResource ComboBoxFlatStyle}">
                         <ComboBoxItem>Dijkstra's Algorithm</ComboBoxItem>
                         <ComboBoxItem>Bellman Ford's</ComboBoxItem>
-                        <ComboBoxItem>DFS Algorithm</ComboBoxItem>
-                        <ComboBoxItem>BFS Algorithm</ComboBoxItem>
+                        <ComboBoxItem>Prim</ComboBoxItem>
+                        <ComboBoxItem>Kruskal</ComboBoxItem>
                     </ComboBox>
-                    <StackPanel VerticalAlignment="Center">
-                        <RadioButton Content="Only show the result" Margin="0,0,0,10" IsChecked="True"/>
-                        <RadioButton Content="Step by step" Margin="0,0,0,10"/>
-                        <RadioButton Content="Visualization" x:Name="rbVisualization"/>
-                    </StackPanel>
-                    <StackPanel VerticalAlignment="Center" Margin="30,0" IsEnabled="False">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ElementName=rbVisualization, Path=IsChecked}" Value="True">
-                                        <Setter Property="IsEnabled" Value="True"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <TextBlock Text="Speed" Margin="0,0,0,10"/>
-                        <Slider Width="200" Interval="25" Maximum="100"/>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                        <StackPanel.Resources>
+                            <converter:RunModeConverter x:Key="RunModeConverter"/>
+                        </StackPanel.Resources>
+                        <RadioButton Content="Only show the result" 
+                                     IsChecked="{Binding RunMode, Converter={StaticResource RunModeConverter} , ConverterParameter=0}"
+                                     Name="rbShowResult"
+                                     GroupName="RunMode"
+                                     Style="{StaticResource RadioButtonStyle}"/>
+                        <RadioButton Content="Step by step"                                      
+                                     IsChecked="{Binding RunMode, Converter={StaticResource RunModeConverter} , ConverterParameter=1}"
+                                     Name="rbStepByStep"
+                                     GroupName="RunMode"
+                                     Style="{StaticResource RadioButtonStyle}"/>
+                        <RadioButton Content="Visualization"
+                                     IsChecked="{Binding RunMode, Converter={StaticResource RunModeConverter} , ConverterParameter=2}"
+                                     Name="rbVisualization"
+                                     GroupName="RunMode"
+                                     Style="{StaticResource RadioButtonStyle}"/>
                     </StackPanel>
                     <Button Content="Run" 
-                            Style="{StaticResource ButtonTool}"
+                            Style="{StaticResource NiceButton}"
+                            Width="100"
+                            Margin="10,10"
                             Click="Button_Run_Click"/>
+                    <StackPanel VerticalAlignment="Center" 
+                                Margin="30,0"
+                                Width="200">
+                        <StackPanel>
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=rbVisualization, Path=IsChecked}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ElementName=rbVisualization, Path=IsChecked}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="Speed" Margin="0,0,0,10"/>
+                            <Slider Width="200" 
+                                    Maximum="2" 
+                                    Name="slSpeed"
+                                    Style="{StaticResource SliderStyle}"
+                                    ValueChanged="slSpeed_ValueChanged"/>
+                            <Grid>
+                                <TextBlock Text="Low"/>
+                                <TextBlock Text="High" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Margin="0,10,0,0" 
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <StackPanel.Resources>
+                                <converter:BackNextConverter x:Key="BackNextConverter"/>
+                                <converter:PlayButtonContentConverter x:Key="PlayBtnConverter"/>
+                            </StackPanel.Resources>
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=rbShowResult, Path=IsChecked}" Value="True">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <Button Content="Back" Width="40" 
+                                    Name="btnBack"
+                                    Click="Button_Click_1"/>
+                            <ToggleButton Content="{Binding IsPause, Converter={StaticResource PlayBtnConverter}}" 
+                                          Width="40" 
+                                          Name="btnPlay"
+                                          IsChecked="{Binding IsPause}"
+                                          Click="Button_Play_Click"/>
+                            <Button Content="Next" Width="40" 
+                                    Name="btnNext"
+                                    Click="Button_Next_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Legend"></TextBlock>
+                    </StackPanel>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="About"></TabItem>
+            <TabItem Style="{StaticResource StyleTabItemRight}">
+                <TabItem.Header>
+                    <TextBlock Text="About" Style="{StaticResource StyleHeaderText}"/>
+                </TabItem.Header>
+            </TabItem>
         </TabControl>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MaxWidth="350" MinWidth="150"/>
                 <ColumnDefinition Width="3" />
-                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Margin="5,10">
+            <StackPanel Margin="5,0,0,0">
                 <StackPanel.Resources>
                     <converter:RouteCostConverter x:Key="RouteCostConverter"/>
                 </StackPanel.Resources>
@@ -102,13 +198,12 @@
                           CanUserAddRows="False"
                           GridLinesVisibility="All"
                           SelectionUnit="FullRow"
-                          Height="200"
-                          SelectionChanged="dataGrid_SelectionChanged">
+                          Height="200">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Node"
-                                            Width="*"
+                                            Width="0.5*"
                                             Binding="{Binding DestNode}"/>
-                        <DataGridTextColumn Header="Path"
+                        <DataGridTextColumn Header="Previous Node"
                                             Binding="{Binding PreviousNode}"
                                             Width="*"/>
                         <DataGridTextColumn Header="TotalCost" 
@@ -130,19 +225,27 @@
                             HorizontalAlignment="Center">
                     <TextBlock Text="Workspace needs to be initialized.."/>
                     <Button Content="New..." 
-                            Width="100" Height="25" 
+                            Style="{StaticResource NiceButton}"
+                            Width="100" Height="25"
                             Margin="0,10,0,0"
                             Click="Button_New_Click"/>
                 </StackPanel>
             </Grid>
-            <Canvas Background="WhiteSmoke"
+            <Canvas Background="White"
                     Grid.Column="2"
                     x:Name="GraphContainer"
                     Focusable="True"
-                    IsEnabled="False"
+                    IsEnabled="{Binding CanEditGraph}"
                     KeyDown="GraphContainer_KeyDown"
                     MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
-                <usercontrol:Connection ArrowDirection="TwoWay"/>
+                <!--<StackPanel>
+                    <usercontrol:Node NodeStatus="IsSelected"></usercontrol:Node>
+                    <usercontrol:Node></usercontrol:Node>
+                    <usercontrol:Node NodeStatus="IsInQueue"></usercontrol:Node>
+                    <usercontrol:Node NodeStatus="Processed"
+                                      RouteCost="5"></usercontrol:Node>
+                    <usercontrol:Node NodeStatus="IsBeingProcessed"></usercontrol:Node>
+                </StackPanel>-->
             </Canvas>
         </Grid>
     </Grid>

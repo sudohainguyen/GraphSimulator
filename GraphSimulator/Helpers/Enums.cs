@@ -18,7 +18,8 @@
     public enum Operation
     {
         ADD,
-        DELETE
+        DELETE,
+        UPDATE
     }
 
     public enum NodeStatus
@@ -35,5 +36,13 @@
         None,
         IsSelected,
         IsInspecting
+    }
+
+    public enum Algorithms
+    {
+        Dijsktra,
+        BellmanFord,
+        Prim,
+        Kruskal
     }
 }

@@ -116,15 +116,35 @@ namespace GraphSimulator.Helpers
         //    return newCon;
         //}
 
-        public static Dictionary<char, Route> InitResults(char startNode, IEnumerable<char> nodes, IEnumerable<Connection> connections)
+        public static Dictionary<char, Route> InitSetForDijsktra(char startNode, IEnumerable<char> nodes)
         {
             var dict = new Dictionary<char, Route>();
             foreach (var node in nodes)
             {
                 dict.Add(node, new Route { DestNode = node } );
+
             }
             dict[startNode].RouteCost = 0;
             return dict;
+        }
+
+        public static Dictionary<char, (char PrevNode, int Cost)> InitSetForPrim(char startNode, IEnumerable<char> nodes)
+        {
+            var dict = new Dictionary<char, (char prevNode, int cost)>();
+            foreach (var node in nodes)
+            {
+                dict.Add(node, ('-', int.MaxValue));
+            }
+            dict[startNode] = (startNode, 0);
+            return dict;
+        }
+
+        public static void ToUndirectedGraph()
+        {
+            foreach (var item in RouteEngine.Instance.Connections)
+            {
+                item.ArrowDirection = Direction.None;
+            }
         }
 
         public static string Base64Encode(string plainText)

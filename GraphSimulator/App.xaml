@@ -38,15 +38,15 @@
         <SolidColorBrush x:Key="UNSELECTED_IDENTIFIER_BRUSH">#000000</SolidColorBrush>
 
         <SolidColorBrush x:Key="SELECTED_FILL_BRUSH">#c15757</SolidColorBrush>
-        <SolidColorBrush x:Key="SELECTED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
+        <SolidColorBrush x:Key="SELECTED_STROKE_BRUSH">Red</SolidColorBrush>
         <SolidColorBrush x:Key="SELECTED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
         
         <SolidColorBrush x:Key="IN_QUEUE_FILL_BRUSH">#FFF86E</SolidColorBrush>
         <SolidColorBrush x:Key="IN_QUEUE_STROKE_BRUSH">#f4a949</SolidColorBrush>
         
-        <SolidColorBrush x:Key="PROCESSED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
         <SolidColorBrush x:Key="PROCESSED_FILL_BRUSH">#c15757</SolidColorBrush>
         <SolidColorBrush x:Key="PROCESSED_STROKE_BRUSH">#b73d3d</SolidColorBrush>
+        <SolidColorBrush x:Key="PROCESSED_IDENTIFIER_BRUSH">#ffffff</SolidColorBrush>
 
         <SolidColorBrush x:Key="BEING_PROCESSED_FILL_BRUSH">#6DBB88</SolidColorBrush>
 
@@ -69,8 +69,8 @@
                     <Setter Property="StrokeBrush" Value="{DynamicResource PROCESSED_STROKE_BRUSH}"/>
                 </Trigger>
                 <Trigger Property="NodeStatus" Value="IsSelected">
-                    <Setter Property="FillBrush" Value="{DynamicResource SELECTED_FILL_BRUSH}"/>
-                    <Setter Property="IdentifierBrush" Value="{DynamicResource SELECTED_IDENTIFIER_BRUSH}"/>
+                    <!--<Setter Property="FillBrush" Value="{DynamicResource SELECTED_FILL_BRUSH}"/>-->
+                    <!--<Setter Property="IdentifierBrush" Value="{DynamicResource SELECTED_IDENTIFIER_BRUSH}"/>-->
                     <Setter Property="StrokeBrush" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
                 </Trigger>
                 <Trigger Property="NodeStatus" Value="IsInQueue">
@@ -92,7 +92,7 @@
                     <Setter Property="Stroke" Value="#232323"/>
                 </Trigger>
                 <Trigger Property="ConnectionStatus" Value="IsSelected">
-                    <Setter Property="Stroke" Value="{DynamicResource SELECTED_STROKE_BRUSH}"/>
+                    <Setter Property="Stroke" Value="{DynamicResource PROCESSED_STROKE_BRUSH}"/>
                 </Trigger>
                 <Trigger Property="ConnectionStatus" Value="IsInspecting">
                     <Setter Property="Stroke" Value="{DynamicResource IN_QUEUE_STROKE_BRUSH}"/>

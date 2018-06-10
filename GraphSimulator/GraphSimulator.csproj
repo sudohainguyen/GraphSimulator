@@ -57,9 +57,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converter\AlgorithmConverter.cs" />
+    <Compile Include="Converter\BackNextConverter.cs" />
+    <Compile Include="Converter\PlayButtonContentConverter.cs" />
     <Compile Include="Converter\RouteCostConverter.cs" />
+    <Compile Include="Converter\RouteCostVisibilityConverter.cs" />
+    <Compile Include="Converter\RunModeConverter.cs" />
+    <Compile Include="Helpers\AlgorithmHelpers\BellmanFordAlgorithm.cs" />
+    <Compile Include="Helpers\AlgorithmHelpers\DijsktraAlgorithm.cs" />
+    <Compile Include="Helpers\AlgorithmHelpers\IAlgorithm.cs" />
+    <Compile Include="Helpers\AlgorithmHelpers\KruskalAlgorithm.cs" />
     <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Helpers\Helper.cs" />
+    <Compile Include="Helpers\AlgorithmHelpers\PrimAlgorithm.cs" />
+    <Compile Include="Helpers\Route.cs" />
     <Compile Include="Helpers\RouteEngine.cs" />
     <Compile Include="SubWindows\CostInputWindow.xaml.cs">
       <DependentUpon>CostInputWindow.xaml</DependentUpon>
@@ -86,6 +97,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Styles\AppStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\CustomTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -128,6 +143,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Sample Graphs\image\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Sample Graphs\data\sample1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

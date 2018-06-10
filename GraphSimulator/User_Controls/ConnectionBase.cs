@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -14,13 +9,6 @@ namespace GraphSimulator.User_Controls
 {
     public abstract class ConnectionBase : Shape, INotifyPropertyChanged
     {
-        public ConnectionBase(bool isDirectedGraph, Node startNode, Node destNode) : this()
-        {
-            ArrowDirection = isDirectedGraph ? Direction.OneWay : Direction.None;
-            StartNode = startNode.Identity;
-            DestNode = destNode.Identity;
-        }
-
         protected PathGeometry pathgeo;
         protected PathFigure pathfigLine;
         protected PolyLineSegment polysegLine;
@@ -33,41 +21,27 @@ namespace GraphSimulator.User_Controls
         private static readonly Brush SELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(183, 61, 61));
         private static readonly Brush UNSELECTED_STROKE_BRUSH = new SolidColorBrush(Color.FromRgb(0, 0, 0));
 
+        #region Properties
         public char StartNode { get; set; }
         public char DestNode { get; set; }
 
         public int Cost { get; set; } = 0;
+        public int ReverseCost { get; set; } = -1;
         public bool IsTwoWay => ArrowDirection == Direction.TwoWay || ArrowDirection == Direction.None;
 
-        //private bool _isSelected = false;
-
-        //public bool IsSelected
-        //{
-        //    get => _isSelected;
-        //    set
-        //    {
-        //        _isSelected = value;
-        //        Stroke = _isSelected
-        //            ? SELECTED_STROKE_BRUSH
-        //            : UNSELECTED_STROKE_BRUSH;
-        //        OnPropertyChanged(nameof(IsSelected));
-        //    }
-        //}
-
-
-
-        public bool IsSelected
+        public ConnectionStatus ConnectionStatus
         {
-            get { return (bool)GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get { return (ConnectionStatus)GetValue(ConnectionStatusProperty); }
+            set { SetValue(ConnectionStatusProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for IsSelected.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IsSelectedProperty =
-            DependencyProperty.Register("IsSelected", typeof(bool), typeof(ConnectionBase),
-                new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsMeasure));
+        // Using a DependencyProperty as the backing store for ConnectionStatus.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ConnectionStatusProperty =
+            DependencyProperty.Register("ConnectionStatus", typeof(ConnectionStatus), typeof(ConnectionBase),
+                new FrameworkPropertyMetadata(ConnectionStatus.None, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
-        
+
+
         /// <summary>
         ///     Identifies the ArrowAngle dependency property.
         /// </summary>
@@ -142,6 +116,15 @@ namespace GraphSimulator.User_Controls
             get { return (bool)GetValue(IsArrowClosedProperty); }
         }
 
+        #endregion
+
+        public ConnectionBase(bool isDirectedGraph, Node startNode, Node destNode) : this()
+        {
+            ArrowDirection = isDirectedGraph ? Direction.OneWay : Direction.None;
+            StartNode = startNode.Identity;
+            DestNode = destNode.Identity;
+        }
+
         public ConnectionBase()
         {
             pathgeo = new PathGeometry();
@@ -204,6 +187,17 @@ namespace GraphSimulator.User_Controls
             pathfig.IsClosed = IsArrowClosed;
 
             return pathfig;
+        }
+
+        public bool Equals(ConnectionBase conn)
+        {
+            return StartNode.Equals(conn.StartNode) && DestNode.Equals(conn.DestNode);
+        }
+
+        public bool A(char node1, char node2)
+        {
+            return StartNode.Equals(node1) && DestNode.Equals(node2)
+                || StartNode.Equals(node2) && DestNode.Equals(node1) && ArrowDirection == Direction.None;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
