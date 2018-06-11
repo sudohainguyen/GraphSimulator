@@ -30,6 +30,8 @@
             <GradientStop Color="#2C5198" Offset="1" />
         </LinearGradientBrush>
 
+        <SolidColorBrush x:Key="AppTheme" Color="#024795"/>
+
         <SolidColorBrush x:Key="NormalButtonBrushInForm" Color="#015CA3"/>
         <SolidColorBrush x:Key="HoverButtonBrushInForm" Color="#F0F9A825"/>
 

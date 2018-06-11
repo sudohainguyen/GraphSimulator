@@ -3,8 +3,6 @@
                     xmlns:local="clr-namespace:GraphSimulator.Styles"
                     xmlns:us="clr-namespace:GraphSimulator.User_Controls">
     <Style TargetType="Button" x:Key="ButtonTool">
-        <Setter Property="Width" Value="100"/>
-        <Setter Property="Margin" Value="10,10"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -108,6 +106,56 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style TargetType="Control" x:Key="StyleBtnCloseInForm">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border x:Name="borderBtn" 
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource NormalButtonBrushInForm}"
+                            CornerRadius="4"
+                            Background="White">
+                        <ContentPresenter x:Name="content" 
+                                          Content="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          VerticalAlignment="Center"
+                                          TextBlock.Foreground="{StaticResource NormalButtonBrushInForm}"
+                                          TextBlock.FontWeight="DemiBold"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="borderBtn" 
+                                    Property="Border.BorderBrush"
+                                    Value="{StaticResource HoverButtonBrushInForm}"/>
+                            <Setter TargetName="content"
+                                    Property="TextBlock.Foreground"
+                                    Value="{StaticResource HoverButtonBrushInForm}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="borderBtn"
+                                    Property="Border.BorderBrush"
+                                    Value="DarkGray"/>
+                            <Setter TargetName="content"
+                                    Property="TextBlock.Foreground"
+                                    Value="DarkGray"/>
+                        </Trigger>
+                        <Trigger Property="Button.IsPressed" Value="True">
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.98"
+                                                    ScaleY="0.98"
+                                                    CenterX="0.5"
+                                                    CenterY="0.5" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 
     <Style x:Key="ToggleFocusVisualStyle" >
         <Setter Property="Control.Template">
@@ -283,9 +331,9 @@
                                   Grid.Row="1" Grid.RowSpan="5"
                                   Opacity="0"
                                   Data="M9.07743946676476E-09,4.31805768640244L4.68740335877841,8.86361158398516C4.68740335877841,8.86361158398516,16.3281249985376,-2.42451336648723,16.3281249985376,-2.42451336648723L14.0622100581796,-4.77304938341948 4.68740335877846,4.31805791992662 2.22656251699567,1.93164208562579z"
-                                  Fill="#024795"
+                                  Fill="{StaticResource AppTheme}"
                                   Stretch="Fill"
-                                  Stroke="#024795" />
+                                  Stroke="{StaticResource AppTheme}" />
 
                                 <Path Name="InderminateMark"
                                   Grid.Column="3"
@@ -476,7 +524,7 @@
                                      Grid.Column="1"
                                      Grid.Row="1"
                                      Opacity="0"
-                                     Fill="#024795"  />
+                                     Fill="{StaticResource AppTheme}"  />
                             </Grid>
                         </BulletDecorator.Bullet>
                         <VisualStateManager.VisualStateGroups>
@@ -574,7 +622,7 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
-        <Setter Property="TextElement.Foreground" Value="#024795"/>
+        <Setter Property="TextElement.Foreground" Value="{StaticResource AppTheme}"/>
         <Setter Property="TextElement.FontWeight" Value="DemiBold"/>
         <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Control.Template">
