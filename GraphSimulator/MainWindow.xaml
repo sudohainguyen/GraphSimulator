@@ -21,6 +21,7 @@
                 <ResourceDictionary.MergedDictionaries>
                     <ResourceDictionary Source="./Styles/AppStyle.xaml"/>
                     <ResourceDictionary Source="./Styles/CustomTab.xaml"/>
+                    <ResourceDictionary Source="./Styles/Icons.xaml"/>
                 </ResourceDictionary.MergedDictionaries>
             </ResourceDictionary>
         </Grid.Resources>
@@ -29,27 +30,74 @@
                 <TabItem.Header>
                     <TextBlock Text="Create graph" Style="{StaticResource StyleHeaderText}"/>
                 </TabItem.Header>
-                <StackPanel Orientation="Horizontal" Background="WhiteSmoke">
-                    <Button Content="New" 
+                <StackPanel Orientation="Horizontal" 
+                            Background="WhiteSmoke">
+                    <Button 
                             Click="Button_New_Click"
                             Width="120"
-                            Margin="10,10"
-                            Style="{StaticResource NiceButton}"/>
-                    <Button Content="Open samples" Grid.Column="1"
+                            Margin="30,10,10,10"
+                            Style="{StaticResource NiceButton}">
+                        <Button.Content>
+                            <StackPanel>
+                                <Rectangle Width="30" 
+                                           Height="30"
+                                           Style="{StaticResource IconContainer}">
+                                    <Rectangle.Fill>
+                                        <VisualBrush Visual="{StaticResource New}"/>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                                <TextBlock Text="New"
+                                           Foreground="White"
+                                           FontWeight="DemiBold"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <!--<Button Content="Open samples" Grid.Column="1"
                             Style="{StaticResource NiceButton}"
                             Width="120"
                             Margin="10,10"
-                            Click="Button_Open_Click"/>
-                    <Button Content="Load from file"
-                            Width="120"
+                            Click="Button_Open_Click"/>-->
+                    <Button Width="120"
                             Margin="10,10"
                             Style="{StaticResource NiceButton}"
-                            Click="Button_Load_Click"/>
-                    <Button Content="Save" Grid.Column="2"
-                            Width="120"
+                            Click="Button_Load_Click">
+                        <Button.Content>
+                            <StackPanel>
+                                <Rectangle Width="30" 
+                                           Height="30"
+                                           Style="{StaticResource IconContainer}">
+                                    <Rectangle.Fill>
+                                        <VisualBrush Visual="{StaticResource Load}"/>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                                <TextBlock Text="Load from file"
+                                           Foreground="White"
+                                           FontWeight="DemiBold"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <Button Width="120"
                             Margin="10,10"
                             Style="{StaticResource NiceButton}"
-                            Click="Button_Save_Click"/>
+                            Click="Button_Save_Click">
+                        <Button.Content>
+                            <StackPanel>
+                                <Rectangle Width="30" 
+                                           Height="30"
+                                           Style="{StaticResource IconContainer}">
+                                    <Rectangle.Fill>
+                                        <VisualBrush Visual="{StaticResource Save}"/>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                                <TextBlock Text="Save"
+                                           Foreground="White"
+                                           FontWeight="DemiBold"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
                     <StackPanel VerticalAlignment="Stretch"
                                 Width="Auto" Margin="10,10,10,5">
                         <TextBlock Text="Add connection"
@@ -106,6 +154,7 @@
                                      GroupName="RunMode"
                                      Style="{StaticResource RadioButtonStyle}"/>
                     </StackPanel>
+                    
                     <Button Content="Run" 
                             Style="{StaticResource NiceButton}"
                             Width="100"
@@ -114,6 +163,11 @@
                     <StackPanel VerticalAlignment="Center" 
                                 Margin="30,0"
                                 Width="200">
+                        <StackPanel.Resources>
+                            <ResourceDictionary>
+                                <Binding x:Key="MyBinding" Path="{Binding IsPause}" Mode="TwoWay" />
+                            </ResourceDictionary>
+                        </StackPanel.Resources>
                         <StackPanel>
                             <StackPanel.Style>
                                 <Style TargetType="StackPanel">
@@ -129,7 +183,7 @@
                             </StackPanel.Style>
                             <TextBlock Text="Speed" Margin="0,0,0,10"/>
                             <Slider Width="200" 
-                                    Maximum="2" 
+                                    Maximum="1" 
                                     Name="slSpeed"
                                     Style="{StaticResource SliderStyle}"
                                     ValueChanged="slSpeed_ValueChanged"/>
@@ -155,21 +209,52 @@
                                     </Style.Triggers>
                                 </Style>
                             </StackPanel.Style>
-                            <Button Content="Back" Width="40" 
+                            <Button Width="40" 
                                     Name="btnBack"
-                                    Click="Button_Click_1"/>
-                            <ToggleButton Content="{Binding IsPause, Converter={StaticResource PlayBtnConverter}}" 
-                                          Width="40" 
+                                    Style="{StaticResource StyleBtnCloseInForm}">
+                                <Button.Content>
+                                    <Rectangle Width="13" 
+                                               Height="10"
+                                               Margin="5"
+                                               Style="{StaticResource IconContainer}">
+                                        <Rectangle.Fill>
+                                            <VisualBrush Visual="{StaticResource Backward}"/>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Button.Content>
+                            </Button>
+                            <!--Content="{Binding IsPause, Converter={StaticResource PlayBtnConverter}}"-->
+                            <ToggleButton Width="40" 
                                           Name="btnPlay"
                                           IsChecked="{Binding IsPause}"
-                                          Click="Button_Play_Click"/>
-                            <Button Content="Next" Width="40" 
+                                          Click="Button_Play_Click"
+                                          Style="{StaticResource StyleBtnCloseInForm}">
+                                <ToggleButton.Content>
+                                    <Rectangle Width="10" 
+                                               Height="10"
+                                               Margin="5">
+                                        <Rectangle.Fill>
+                                            <VisualBrush Visual="{Binding IsPause, Converter={StaticResource PlayBtnConverter}}"/>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </ToggleButton.Content>
+                            </ToggleButton>
+                            <Button Width="40" 
                                     Name="btnNext"
-                                    Click="Button_Next_Click"/>
+                                    Click="Button_Next_Click"
+                                    Style="{StaticResource StyleBtnCloseInForm}">
+                                <Button.Content>
+                                    <Rectangle Width="13" 
+                                               Height="10"
+                                               Margin="5"
+                                               Style="{StaticResource IconContainer}">
+                                        <Rectangle.Fill>
+                                            <VisualBrush Visual="{StaticResource Forward}"/>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Button.Content>
+                            </Button>
                         </StackPanel>
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock Text="Legend"></TextBlock>
                     </StackPanel>
                 </StackPanel>
             </TabItem>
@@ -219,6 +304,7 @@
                 Background="DarkGray"/>
             <Grid Name="coveringPanel" 
                   Grid.Column="2" 
+                  Visibility="Collapsed"
                   Background="#889e9e9e" 
                   Panel.ZIndex="1">
                 <StackPanel VerticalAlignment="Center"
@@ -231,14 +317,16 @@
                             Click="Button_New_Click"/>
                 </StackPanel>
             </Grid>
-            <Canvas Background="White"
-                    Grid.Column="2"
-                    x:Name="GraphContainer"
-                    Focusable="True"
-                    IsEnabled="{Binding CanEditGraph}"
-                    KeyDown="GraphContainer_KeyDown"
-                    MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
-                <!--<StackPanel>
+            <Border Grid.Column="2"
+                    BorderBrush="LightGray"
+                    BorderThickness="5">
+                <Canvas Background="White"
+                        x:Name="GraphContainer"
+                        Focusable="True"
+                        IsEnabled="{Binding CanEditGraph}"
+                        KeyDown="GraphContainer_KeyDown"
+                        MouseLeftButtonDown="GraphContainer_MouseLeftButtonDown">
+                    <!--<StackPanel>
                     <usercontrol:Node NodeStatus="IsSelected"></usercontrol:Node>
                     <usercontrol:Node></usercontrol:Node>
                     <usercontrol:Node NodeStatus="IsInQueue"></usercontrol:Node>
@@ -246,7 +334,137 @@
                                       RouteCost="5"></usercontrol:Node>
                     <usercontrol:Node NodeStatus="IsBeingProcessed"></usercontrol:Node>
                 </StackPanel>-->
-            </Canvas>
+                </Canvas>
+            </Border>
+            <Grid Name="gridMenu" Grid.Column="2" 
+                  Margin="-190, 10"
+                  HorizontalAlignment="Right"
+                  Width="250">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Background="#e0e0e0" Grid.Row="0" 
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Grid.RowSpan="8" />
+                <usercontrol:Node Grid.Column="1" 
+                                  VerticalAlignment="Center"
+                                  IsEnabled="False"
+                                  HorizontalAlignment="Center"/>
+                <usercontrol:Node Grid.Column="1" 
+                                  Grid.Row="1"
+                                  IsEnabled="False"
+                                  NodeStatus="IsSelected"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"/>
+                <usercontrol:Node Grid.Column="1" 
+                                  Grid.Row="2"
+                                  IsEnabled="False"
+                                  NodeStatus="IsInQueue"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"/>
+                <usercontrol:Node Grid.Column="1" 
+                                  Grid.Row="3"
+                                  IsEnabled="False"
+                                  NodeStatus="IsBeingProcessed"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"/>
+                <usercontrol:Node Grid.Column="1" 
+                                  Grid.Row="4"
+                                  IsEnabled="False"
+                                  NodeStatus="Processed"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"/>
+                <usercontrol:Connection Grid.Column="1"
+                                        Grid.Row="5"
+                                        X1="10"
+                                        Y1="10"
+                                        X2="75"
+                                        Y2="75"/>
+                <usercontrol:Connection Grid.Column="1"
+                                        Grid.Row="6"
+                                        ConnectionStatus="IsInspecting"
+                                        X1="10" Y1="10"
+                                        X2="75" Y2="75"/>
+                <usercontrol:Connection Grid.Column="1"
+                                        Grid.Row="7"
+                                        ConnectionStatus="IsSelected"
+                                        X1="10" Y1="10"
+                                        X2="75" Y2="75"/>
+                <TextBlock Grid.Column="2" 
+                           Text="Normal node"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="2"
+                           Grid.Row="1"
+                           Text="Selected node"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="2" 
+                           Grid.Row="2"
+                           Text="Queued node"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="2" 
+                           Grid.Row="3"
+                           Text="Processing node"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="2" 
+                           Grid.Row="4"
+                           Text="Processed node"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="2" 
+                           Grid.Row="5"
+                           Text="Normal connection"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="2" 
+                           Grid.Row="6"
+                           Text="Inspecting connection"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="2" 
+                           Grid.Row="7"
+                           Text="Processed connection"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"/>
+                <Button Name="butonMenu" 
+                        Grid.Row="0" 
+                        Grid.Column="0"
+                        Background="#e0e0e0"
+                        Style="{StaticResource ButtonTool}"
+                        Click="btnMenu_Click" >
+                    <Button.Content>
+                        <StackPanel>
+                            <Rectangle Width="30" 
+                                           Height="30"
+                                           Style="{StaticResource IconContainer}">
+                                <Rectangle.Fill>
+                                    <VisualBrush Visual="{StaticResource Help}"/>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <TextBlock Text="Legend"
+                                       Foreground="Black"
+                                       FontWeight="DemiBold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

@@ -72,6 +72,7 @@
     <Compile Include="Helpers\AlgorithmHelpers\PrimAlgorithm.cs" />
     <Compile Include="Helpers\Route.cs" />
     <Compile Include="Helpers\RouteEngine.cs" />
+    <Compile Include="Helpers\StoryboardLibrary.cs" />
     <Compile Include="SubWindows\CostInputWindow.xaml.cs">
       <DependentUpon>CostInputWindow.xaml</DependentUpon>
     </Compile>
@@ -101,6 +102,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\CustomTab.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Icons.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

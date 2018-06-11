@@ -14,6 +14,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Windows.Threading;
 using GraphSimulator.Helpers.AlgorithmHelpers;
+using System.Windows.Media.Animation;
 
 namespace GraphSimulator
 {
@@ -22,7 +23,7 @@ namespace GraphSimulator
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private const float MAX_TIMESPAN = 2.5f;
+        private const float MAX_TIMESPAN = 1.5f;
 
         #region Fields
         private bool _isDirectedGraph = false;
@@ -592,7 +593,7 @@ namespace GraphSimulator
             {
                 _timer.Tick -= Tick;
                 _timer.Stop();
-                IsPause = false;
+                IsPause = true;
                 MessageBox.Show("Finished");
             }
         }
@@ -640,11 +641,6 @@ namespace GraphSimulator
             RouteEngine.Instance.Actions[_curStep]();
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            Routes[1].RouteCost = 333;
-        }
-
         private void Button_Play_Click(object sender, RoutedEventArgs e)
         {
             if (IsPause)
@@ -655,6 +651,15 @@ namespace GraphSimulator
             {
                 _timer.Start();
             }
+        }
+        private bool isHide = true;
+        private void btnMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var function = new PowerEase();
+            var mode = EasingMode.EaseOut;
+
+            StoryboardLibrary.MenuAnim(gridMenu, isHide, gridMenu.RenderSize.Width - 55, function, mode, StoryboardLibrary.MoveDirection.RightLeft).Begin();
+            isHide = !isHide;
         }
     }
 }
