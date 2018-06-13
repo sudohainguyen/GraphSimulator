@@ -193,19 +193,34 @@ namespace GraphSimulator
         {
             if (e.Key == Key.Delete)
             {
-                var nodesToDel = GraphContainer.Children.OfType<Node>()
-                    .Where(node => node.IsSelected).ToList();
-                if (nodesToDel.Count() == 0)
+                List<UIElement> nodesToDel = new List<UIElement>(GraphContainer.Children.OfType<Node>()
+                    .Where(node => node.IsSelected));
+                var j = nodesToDel.Count - 1;
+                if (j + 1 == 0)
                     return;
-
-                _operationStack.Push((Operation.DELETE, nodesToDel));
-
-                foreach (var item in nodesToDel)
+                for (; j >= 0; j--)
                 {
+                    var item = (Node)nodesToDel[j];
                     GraphContainer.Children.Remove(item);
+                    var i = RouteEngine.Instance.Connections.Count - 1;
+                    for (; i >= 0; i--)
+                    {
+                        var curCon = RouteEngine.Instance.Connections[i];
+                        if (curCon.StartNode.Equals(item.Identity) || curCon.DestNode.Equals(item.Identity))
+                        {
+                            RouteEngine.Instance.Connections.RemoveAt(i);
+                            GraphContainer.Children.Remove(curCon.TextBlockCost);
+                            GraphContainer.Children.Remove(curCon);
+                            nodesToDel.Add(curCon.TextBlockCost);
+                            nodesToDel.Add(curCon);
+                        }
+                    }
+
                     RouteEngine.Instance.Nodes.Remove(item.Identity);
                     _numberOfNode--;
                 }
+
+                _operationStack.Push((Operation.DELETE, nodesToDel));
             }
             else if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
