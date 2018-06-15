@@ -233,6 +233,7 @@
                             </StackPanel.Style>
                             <Button Width="40" 
                                     Name="btnBack"
+                                    Click="Button_Back_Click"
                                     Style="{StaticResource StyleBtnCloseInForm}">
                                 <Button.Content>
                                     <Rectangle Width="13" 
@@ -470,7 +471,7 @@
                         Grid.Column="0"
                         Background="#e0e0e0"
                         Style="{StaticResource ButtonTool}"
-                        Click="btnMenu_Click" >
+                        Click="Button_Menu_Click" >
                     <Button.Content>
                         <StackPanel>
                             <Rectangle Width="30" 

@@ -25,11 +25,11 @@ namespace GraphSimulator.Helpers
                 return _instance;
             }
         }
-
-
+        
         public List<Connection> Connections { get; set; } = new List<Connection>();
         public Dictionary<char, Node> Nodes { get; set; } = new Dictionary<char, Node>();
         public List<Action> Actions { get; set; }
+        public List<Dictionary<string, (string status, int? nodeValue)>> BackStack { get; set; }
 
         public bool HasNegativeCost => Connections.Any(c => c.Cost < 0);
         public bool IsUndirected => Connections.All(c => c.ArrowDirection == Direction.None);
@@ -37,12 +37,6 @@ namespace GraphSimulator.Helpers
                                                   .Union(Connections.Select(c => c.DestNode))
                                                   .Distinct().Count() == Nodes.Count && Nodes.Count != 0;
 
-        public void ToUndirectedGraph()
-        {
-            foreach (var item in Connections)
-            {
-                item.ArrowDirection = Direction.None;
-            }
-        }
+        public void ToUndirectedGraph() => Connections.ForEach(c => c.ArrowDirection = Direction.None);
     }
 }

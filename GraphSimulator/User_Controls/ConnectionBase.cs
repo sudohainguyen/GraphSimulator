@@ -24,6 +24,7 @@ namespace GraphSimulator.User_Controls
         #region Properties
         public char StartNode { get; set; }
         public char DestNode { get; set; }
+        public string Identity => $"{StartNode}{DestNode}";
 
         public int Cost { get; set; } = 0;
         public int ReverseCost { get; set; } = -1;
@@ -194,7 +195,7 @@ namespace GraphSimulator.User_Controls
             return StartNode.Equals(conn.StartNode) && DestNode.Equals(conn.DestNode);
         }
 
-        public bool A(char node1, char node2)
+        public bool HasTwoVertices(char node1, char node2)
         {
             return StartNode.Equals(node1) && DestNode.Equals(node2)
                 || StartNode.Equals(node2) && DestNode.Equals(node1) && ArrowDirection == Direction.None;
