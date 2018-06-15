@@ -71,10 +71,13 @@
     <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Helpers\AlgorithmHelpers\PrimAlgorithm.cs" />
     <Compile Include="Helpers\Route.cs" />
-    <Compile Include="Helpers\RouteEngine.cs" />
+    <Compile Include="Helpers\Graph.cs" />
     <Compile Include="Helpers\StoryboardLibrary.cs" />
     <Compile Include="SubWindows\CostInputWindow.xaml.cs">
       <DependentUpon>CostInputWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SubWindows\SamplesWindow.xaml.cs">
+      <DependentUpon>SamplesWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SubWindows\SelectGraphTypeWindow.xaml.cs">
       <DependentUpon>SelectGraphTypeWindow.xaml</DependentUpon>
@@ -110,6 +113,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SubWindows\CostInputWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SubWindows\SamplesWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -150,10 +157,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Sample Graphs\image\" />
+    <Resource Include="Sample Graphs\sample2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Sample Graphs\data\sample1.txt" />
+    <Resource Include="Sample Graphs\sample1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Sample Graphs\sample3.png" />
+    <Resource Include="Sample Graphs\sample4.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

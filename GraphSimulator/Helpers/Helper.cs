@@ -139,14 +139,6 @@ namespace GraphSimulator.Helpers
             return dict;
         }
 
-        public static void ToUndirectedGraph()
-        {
-            foreach (var item in RouteEngine.Instance.Connections)
-            {
-                item.ArrowDirection = Direction.None;
-            }
-        }
-
         public static string Base64Encode(string plainText)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);

@@ -95,9 +95,7 @@
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
                                     <ScaleTransform ScaleX="0.98"
-                                                    ScaleY="0.98"
-                                                    CenterX="0.5"
-                                                    CenterY="0.5" />
+                                                    ScaleY="0.98"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -683,6 +681,35 @@
                             <Setter Property="UIElement.Visibility" TargetName="ContentSite" Value="Hidden"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="RadioButton" x:Key="ImgBtn">
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="CornflowerBlue"/>
+            </Trigger>
+            <Trigger Property="IsChecked" Value="False">
+                <Setter Property="Background" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Margin" Value="10,20,10,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            Background="{TemplateBinding Background}">
+                        <StackPanel>
+                            <Image Source="{Binding ImgSrc}" Height="200" Width="200"/>
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="15"
+                                       FontWeight="DemiBold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

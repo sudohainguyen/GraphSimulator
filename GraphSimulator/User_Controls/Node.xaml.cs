@@ -146,7 +146,7 @@ namespace GraphSimulator.User_Controls
                 X = Canvas.GetLeft(this) + Node.Radius;
                 Y = Canvas.GetTop(this) + Node.Radius;
 
-                foreach (var con in RouteEngine.Instance.Connections)
+                foreach (var con in Graph.Instance.Connections)
                 {
                     if (con.StartNode == this.Identity)
                     {
