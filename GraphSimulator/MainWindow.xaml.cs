@@ -87,6 +87,8 @@ namespace GraphSimulator
             InitializeComponent();
         }
 
+        #region Events
+
         private void GraphContainer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Keyboard.Focus(GraphContainer);
@@ -303,7 +305,7 @@ namespace GraphSimulator
         private void Button_Run_Click(object sender, RoutedEventArgs e)
         {
             var selectedNodes = GraphContainer.Children.OfType<Node>().Where(n => n.IsSelected);
-            if ((selectedNodes.Count() & 1) != 1)
+            if ((selectedNodes.Count() & 1) != 1 && !(Algorithm is KruskalAlgorithm))
             {
                 MessageBox.Show("Please select only one node to run the algorithm");
                 return;
@@ -313,7 +315,7 @@ namespace GraphSimulator
                 MessageBox.Show(message, "Warning");
                 return;
             }
-            if (Algorithm is PrimAlgorithm && !Graph.Instance.IsUndirected)
+            if (Algorithm is PrimAlgorithm || Algorithm is KruskalAlgorithm && !Graph.Instance.IsUndirected)
             {
                 if (MessageBox.Show("To find MST, the graph must be converted to undirected graph. Agree ?", "Attention", 
                                     MessageBoxButton.YesNo, 
@@ -323,8 +325,8 @@ namespace GraphSimulator
                 Graph.Instance.ToUndirectedGraph();
             }
 
-            Routes = new ObservableCollection<Route>();
-            var root = selectedNodes.ElementAt(0);
+            //Routes = new ObservableCollection<Route>();
+            var root = selectedNodes.ElementAtOrDefault(0);
 
             switch (RunMode)
             {
@@ -360,27 +362,9 @@ namespace GraphSimulator
         {
             if (SaveWorkspace(out var err))
                 MessageBox.Show("Saved successfully");
-            else
+            else if (!string.IsNullOrEmpty(err))
                 MessageBox.Show(err);
         }
-
-        //private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        //{
-        //    foreach (var item in GraphContainer.Children.OfType<UIElement>())
-        //    {
-        //        if (item is Node n) n.NodeStatus = NodeStatus.None;
-        //        else if (item is Connection con) con.ConnectionStatus = ConnectionStatus.None;
-        //    }
-        //    if (dataGrid.CurrentItem is Route r)
-        //    {
-        //        Graph.Instance.Nodes[r.Paths[0].StartNode].NodeStatus = NodeStatus.IsSelected;
-        //        foreach (var con in r.Paths)
-        //        {
-        //            con.ConnectionStatus = ConnectionStatus.IsSelected;
-        //            Graph.Instance.Nodes[con.DestNode].NodeStatus = NodeStatus.IsSelected;
-        //        }
-        //    }
-        //}
 
         private void Button_Load_Click(object sender, RoutedEventArgs e)
         {
@@ -398,8 +382,96 @@ namespace GraphSimulator
 
         private void slSpeed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            _timer.Interval = TimeSpan.FromSeconds(MAX_TIMESPAN - e.NewValue);
+            if (_timer != null)
+                _timer.Interval = TimeSpan.FromSeconds(MAX_TIMESPAN - e.NewValue);
         }
+
+        private void Button_Next_Click(object sender, RoutedEventArgs e)
+        {
+            var actions = Graph.Instance.Actions;
+            if (actions is null || actions.Count == 0)
+                return;
+            if (_curStep != Graph.Instance.Actions.Count - 1)
+            {
+                if (Graph.Instance.BackStack is null)
+                    Graph.Instance.BackStack = new List<Dictionary<string, (string status, int? nodeValue)>>();
+                var stack = Graph.Instance.BackStack;
+                if (_curStep == stack.Count)
+                {
+                    var curElementsStatus = new Dictionary<string, (string status, int? nodeValue)>();
+                    foreach (var element in GraphContainer.Children)
+                    {
+                        if (element is Node n)
+                            curElementsStatus.Add(n.Identity.ToString(), (n.NodeStatus.ToString(), n.RouteCost));
+                        else if (element is Connection c)
+                            curElementsStatus.Add(c.Identity, (c.ConnectionStatus.ToString(), null));
+                    }
+                    stack.Add(curElementsStatus);
+                }
+                if (!btnBack.IsEnabled)
+                    btnBack.IsEnabled = true;
+                _curStep++;
+            }
+            else
+            {
+                btnNext.IsEnabled = false;
+                MessageBox.Show("Finished");
+            }
+            Graph.Instance.Actions[_curStep]();
+        }
+
+        private void Button_Play_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsPause)
+            {
+                _timer.Stop();
+            }
+            else
+            {
+                _timer.Start();
+            }
+        }
+
+        private void Button_Back_Click(object sender, RoutedEventArgs e)
+        {
+            _curStep--;
+            if (!btnNext.IsEnabled)
+                btnNext.IsEnabled = true;
+            else if (_curStep == 0)
+                btnBack.IsEnabled = false;
+            foreach (var element in GraphContainer.Children)
+            {
+                var temp = Graph.Instance.BackStack[_curStep];
+                if (element is Node n)
+                {
+                    n.NodeStatus = (NodeStatus)Enum.Parse(typeof(NodeStatus), temp[$"{n.Identity}"].status);
+                    n.RouteCost = temp[$"{n.Identity}"].nodeValue.Value;
+                }
+                else if (element is Connection c)
+                {
+                    c.ConnectionStatus = (ConnectionStatus)Enum.Parse(typeof(ConnectionStatus), temp[c.Identity].status);
+                }
+            }
+        }
+
+        private void Button_Menu_Click(object sender, RoutedEventArgs e)
+        {
+            var function = new PowerEase();
+            var mode = EasingMode.EaseOut;
+
+            StoryboardLibrary.MenuAnim(gridMenu, _isHide, gridMenu.RenderSize.Width - 55, function, mode, StoryboardLibrary.MoveDirection.RightLeft).Begin();
+            _isHide = !_isHide;
+        }
+
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (((TabControl)sender).SelectedIndex == 0)
+            {
+                ResetGraphStatus();
+            }
+        }
+
+        #endregion
 
         #region Private methods
 
@@ -548,53 +620,60 @@ namespace GraphSimulator
                 err = "Cannot save an empty workspace.";
                 return false;
             }
-
-            var nodesdata = new List<NodeData>();
-            var consdata = new List<ConData>();
-
-            foreach (var node in nodes)
+            try
             {
-                var obj = new NodeData
+                var nodesdata = new List<NodeData>();
+                var consdata = new List<ConData>();
+
+                foreach (var node in nodes)
                 {
-                    Id = node.Identity,
-                    X = node.X,
-                    Y = node.Y
-                };
-                nodesdata.Add(obj);
-            }
+                    var obj = new NodeData
+                    {
+                        Id = node.Identity,
+                        X = node.X,
+                        Y = node.Y
+                    };
+                    nodesdata.Add(obj);
+                }
 
-            foreach (var con in cons)
-            {
-                var obj = new ConData
+                foreach (var con in cons)
                 {
-                    Dest = con.DestNode,
-                    Start = con.StartNode,
-                    Cost = con.Cost,
-                    Dir = (int)con.ArrowDirection
-                };
-                consdata.Add(obj);
-            }
-            var isDr = _isDirectedGraph;
-            var jsonGraphType = JsonConvert.SerializeObject(isDr);
-            var jsonNodes = JsonConvert.SerializeObject(nodesdata);
-            var jsonCons = JsonConvert.SerializeObject(consdata);
+                    var obj = new ConData
+                    {
+                        Dest = con.DestNode,
+                        Start = con.StartNode,
+                        Cost = con.Cost,
+                        Dir = (int)con.ArrowDirection
+                    };
+                    consdata.Add(obj);
+                }
+                var isDr = _isDirectedGraph;
+                var jsonGraphType = JsonConvert.SerializeObject(isDr);
+                var jsonNodes = JsonConvert.SerializeObject(nodesdata);
+                var jsonCons = JsonConvert.SerializeObject(consdata);
 
-            var dialog = new SaveFileDialog()
+                var dialog = new SaveFileDialog()
+                {
+                    Filter = "Text file (*.txt)|*.txt",
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    OverwritePrompt = true
+                };
+                var encodedData = Helper.Base64Encode(jsonGraphType + "--" + jsonNodes + "--" + jsonCons);
+                if (!dialog.ShowDialog(this).Value)
+                {
+                    err = null;
+                    return false;
+                }
+                File.WriteAllText(dialog.FileName, encodedData);
+                File.SetAttributes(dialog.FileName, FileAttributes.ReadOnly);
+
+                return true;
+            }
+            catch
             {
-                Filter = "Text file (*.txt)|*.txt",
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                OverwritePrompt = true
-            };
-            var encodedData = Helper.Base64Encode(jsonGraphType + "--" + jsonNodes + "--" + jsonCons);
-            if (!dialog.ShowDialog(this).Value)
-            {
-                err = "Unexpected Error.";
+                err = "Something went wrong";
                 return false;
             }
-            File.WriteAllText(dialog.FileName, encodedData);
-            File.SetAttributes(dialog.FileName, FileAttributes.ReadOnly);
-
-            return true;
         }
 
         private void AddNewNode(Node newNode)
@@ -687,88 +766,5 @@ namespace GraphSimulator
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
-
-        private void Button_Next_Click(object sender, RoutedEventArgs e)
-        {
-            var actions = Graph.Instance.Actions;
-            if (actions is null || actions.Count == 0)
-                return;
-            if (_curStep != Graph.Instance.Actions.Count - 1)
-            {
-                if (Graph.Instance.BackStack is null)
-                    Graph.Instance.BackStack = new List<Dictionary<string, (string status, int? nodeValue)>>();
-                var stack = Graph.Instance.BackStack;
-                if (_curStep == stack.Count)
-                {
-                    var curElementsStatus = new Dictionary<string, (string status, int? nodeValue)>();
-                    foreach (var element in GraphContainer.Children)
-                    {
-                        if (element is Node n)
-                            curElementsStatus.Add(n.Identity.ToString(), (n.NodeStatus.ToString(), n.RouteCost));
-                        else if (element is Connection c)
-                            curElementsStatus.Add(c.Identity, (c.ConnectionStatus.ToString(), null));
-                    }
-                    stack.Add(curElementsStatus);
-                }
-                if (!btnBack.IsEnabled)
-                    btnBack.IsEnabled = true;
-                _curStep++;
-            }
-            else
-            {
-                btnNext.IsEnabled = false;
-            }
-            Graph.Instance.Actions[_curStep]();
-        }
-
-        private void Button_Play_Click(object sender, RoutedEventArgs e)
-        {
-            if (IsPause)
-            {
-                _timer.Stop();
-            }
-            else
-            {
-                _timer.Start();
-            }
-        }
-        private void Button_Menu_Click(object sender, RoutedEventArgs e)
-        {
-            var function = new PowerEase();
-            var mode = EasingMode.EaseOut;
-
-            StoryboardLibrary.MenuAnim(gridMenu, _isHide, gridMenu.RenderSize.Width - 55, function, mode, StoryboardLibrary.MoveDirection.RightLeft).Begin();
-            _isHide = !_isHide;
-        }
-
-        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (((TabControl) sender).SelectedIndex == 0)
-            {
-                ResetGraphStatus();
-            }
-        }
-
-        private void Button_Back_Click(object sender, RoutedEventArgs e)
-        {
-            _curStep--;
-            if (!btnNext.IsEnabled)
-                btnNext.IsEnabled = true;
-            else if (_curStep == 0)
-                btnBack.IsEnabled = false;
-            foreach (var element in GraphContainer.Children)
-            {
-                var temp = Graph.Instance.BackStack[_curStep];
-                if (element is Node n)
-                {
-                    n.NodeStatus = (NodeStatus)Enum.Parse(typeof(NodeStatus), temp[$"{n.Identity}"].status);
-                    n.RouteCost = temp[$"{n.Identity}"].nodeValue.Value;
-                }
-                else if (element is Connection c)
-                {
-                    c.ConnectionStatus = (ConnectionStatus)Enum.Parse(typeof(ConnectionStatus), temp[c.Identity].status);
-                }
-            }
-        }
     }
 }

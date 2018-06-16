@@ -190,11 +190,6 @@ namespace GraphSimulator.User_Controls
             return pathfig;
         }
 
-        public bool Equals(ConnectionBase conn)
-        {
-            return StartNode.Equals(conn.StartNode) && DestNode.Equals(conn.DestNode);
-        }
-
         public bool HasTwoVertices(char node1, char node2)
         {
             return StartNode.Equals(node1) && DestNode.Equals(node2)

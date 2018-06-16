@@ -9,6 +9,11 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
 {
     public class BellmanFordAlgorithm : IAlgorithm
     {
+        public bool CanRunWithGraph(Graph g, out string message)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<Route> ExtractStepsWithResult(Node startNode)
         {
             throw new NotImplementedException();

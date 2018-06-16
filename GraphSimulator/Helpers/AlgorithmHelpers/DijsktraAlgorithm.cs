@@ -12,7 +12,7 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
     {
         public IEnumerable<Route> ShowResult(Node startNode)
         {
-            var shortestPaths = Helper.InitSetForDijsktra(startNode.Identity, RouteEngine.Instance.Nodes.Select(p => p.Key));         // Initialisation
+            var shortestPaths = Helper.InitSetForDijsktra(startNode.Identity, Graph.Instance.Nodes.Select(p => p.Key));         // Initialisation
             //startNode.RouteCost = 0;
 
             var queue = new Queue<char>();
@@ -28,7 +28,7 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
                 }
                 var nodeToProcess = queue.Dequeue();                                                                 // Process next node
 
-                var neighbors = RouteEngine.Instance.Connections
+                var neighbors = Graph.Instance.Connections
                     .Where(c => c.StartNode == nodeToProcess || (c.DestNode == nodeToProcess && c.IsTwoWay));
 
                 foreach (var item in neighbors)
@@ -41,14 +41,14 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
                         {
                             item
                         };
-                        RouteEngine.Instance.Nodes[curNeighboringNode].RouteCost = route.RouteCost = item.Cost + shortestPaths[nodeToProcess].RouteCost;
+                        Graph.Instance.Nodes[curNeighboringNode].RouteCost = route.RouteCost = item.Cost + shortestPaths[nodeToProcess].RouteCost;
 
-                        if (RouteEngine.Instance.Nodes[curNeighboringNode].NodeStatus == NodeStatus.Processed || queue.Contains(curNeighboringNode))
+                        if (Graph.Instance.Nodes[curNeighboringNode].NodeStatus == NodeStatus.Processed || queue.Contains(curNeighboringNode))
                             continue;
                         queue.Enqueue(curNeighboringNode);
                     }
                 }
-                RouteEngine.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.Processed;
+                Graph.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.Processed;
             }
 
             foreach (var item in shortestPaths.Select(p => p.Value)
@@ -64,18 +64,18 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
 
         public IEnumerable<Route> ExtractStepsWithResult(Node startNode)
         {
-            RouteEngine.Instance.Actions = new List<Action>();
+            Graph.Instance.Actions = new List<Action>();
 
-            var shortestPaths = Helper.InitSetForDijsktra(startNode.Identity, RouteEngine.Instance.Nodes.Select(p => p.Key));
+            var shortestPaths = Helper.InitSetForDijsktra(startNode.Identity, Graph.Instance.Nodes.Select(p => p.Key));
 
             var queue = new Queue<char>();
             queue.Enqueue(startNode.Identity);
 
             var handledNodes = new List<char>();
 
-            RouteEngine.Instance.Actions.Add(() =>
+            Graph.Instance.Actions.Add(() =>
             {
-                foreach (var item in RouteEngine.Instance.Nodes.Where(p => p.Key != startNode.Identity).Select(p => p.Value))
+                foreach (var item in Graph.Instance.Nodes.Where(p => p.Key != startNode.Identity).Select(p => p.Value))
                 {
                     item.RouteCost = int.MaxValue;
                 }
@@ -95,14 +95,14 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
                 }
                 var nodeToProcess = queue.Dequeue();
 
-                RouteEngine.Instance.Actions.Add(() => RouteEngine.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.IsBeingProcessed);
+                Graph.Instance.Actions.Add(() => Graph.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.IsBeingProcessed);
 
-                var neighbors = RouteEngine.Instance.Connections
+                var neighbors = Graph.Instance.Connections
                     .Where(c => c.StartNode == nodeToProcess || (c.DestNode == nodeToProcess && c.IsTwoWay));
 
                 foreach (var item in neighbors)
                 {
-                    RouteEngine.Instance.Actions.Add(() => item.ConnectionStatus = ConnectionStatus.IsInspecting);
+                    Graph.Instance.Actions.Add(() => item.ConnectionStatus = ConnectionStatus.IsInspecting);
 
                     var curNeighboringNode = item.DestNode;
                     var route = shortestPaths[curNeighboringNode];
@@ -118,38 +118,45 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
                         if (!handledNodes.Contains(curNeighboringNode) && !queue.Contains(curNeighboringNode))
                         {
 
-                            RouteEngine.Instance.Actions.Add(() => RouteEngine.Instance.Nodes[curNeighboringNode].NodeStatus = NodeStatus.IsInQueue);
+                            Graph.Instance.Actions.Add(() => Graph.Instance.Nodes[curNeighboringNode].NodeStatus = NodeStatus.IsInQueue);
                             queue.Enqueue(curNeighboringNode);
                         }
                         var temp = new List<Connection>(route.Paths);
-                        RouteEngine.Instance.Actions.Add(() =>
+                        Graph.Instance.Actions.Add(() =>
                         {
                             var cost = 0;
                             foreach (var conn in temp1)
                             {
-                                RouteEngine.Instance.Connections.FirstOrDefault(c => c.Equals(conn)).ConnectionStatus = ConnectionStatus.None;
+                                Graph.Instance.Connections.FirstOrDefault(c => c.Identity.Equals(conn.Identity))
+                                                          .ConnectionStatus = ConnectionStatus.None;
                             }
                             foreach (var conn in temp)
                             {
-                                RouteEngine.Instance.Connections.FirstOrDefault(c => c.Equals(conn)).ConnectionStatus = ConnectionStatus.IsSelected;
+                                Graph.Instance.Connections.FirstOrDefault(c => c.Identity.Equals(conn.Identity))
+                                                          .ConnectionStatus = ConnectionStatus.IsSelected;
                                 cost += conn.Cost;
                             }
-                            RouteEngine.Instance.Nodes[curNeighboringNode].RouteCost = cost;
+                            Graph.Instance.Nodes[curNeighboringNode].RouteCost = cost;
                             //var temp2 = new List<Route>(shortestPaths.Values);
                             //action(temp2);
                         });
                     }
                     else
                     {
-                        RouteEngine.Instance.Actions.Add(() => item.ConnectionStatus = ConnectionStatus.None);
+                        Graph.Instance.Actions.Add(() => item.ConnectionStatus = ConnectionStatus.None);
                     }
                 }
                 handledNodes.Add(nodeToProcess);
-                RouteEngine.Instance.Actions.Add(() => RouteEngine.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.Processed);
+                Graph.Instance.Actions.Add(() => Graph.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.Processed);
             }
 
             return shortestPaths.Values;
         }
-    }
 
+        public bool CanRunWithGraph(Graph g, out string message)
+        {
+            message = "Dijkstra Algorithm cannot work with negative weighted graph";
+            return !g.HasNegativeCost;
+        }
+    }
 }

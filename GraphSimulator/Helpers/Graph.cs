@@ -22,6 +22,7 @@ namespace GraphSimulator.Helpers
                     if (_instance is null)
                         _instance = new Graph();
                 }
+
                 return _instance;
             }
         }

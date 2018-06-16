@@ -40,6 +40,10 @@ namespace GraphSimulator.Helpers
             RouteCost = routeCost;
         }
 
+        public Route(Connection con) : this(con.DestNode, con.StartNode, con.Cost)
+        { 
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

@@ -7,5 +7,6 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
     {
         IEnumerable<Route> ShowResult(Node startNode);
         IEnumerable<Route> ExtractStepsWithResult(Node startNode);
+        bool CanRunWithGraph(Graph g, out string message);
     }
 }
