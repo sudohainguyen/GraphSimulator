@@ -152,9 +152,9 @@
                               Margin="10,0,30,0"
                               Style="{StaticResource ComboBoxFlatStyle}">
                         <ComboBoxItem>Dijkstra's Algorithm</ComboBoxItem>
-                        <ComboBoxItem>Bellman Ford's</ComboBoxItem>
-                        <ComboBoxItem>Prim</ComboBoxItem>
-                        <ComboBoxItem>Kruskal</ComboBoxItem>
+                        <ComboBoxItem>Bellman Ford (Not available)</ComboBoxItem>
+                        <ComboBoxItem>Prim's Algorithm</ComboBoxItem>
+                        <ComboBoxItem>Kruskal's Algorithm</ComboBoxItem>
                     </ComboBox>
                     <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
                         <StackPanel.Resources>
