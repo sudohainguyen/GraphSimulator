@@ -58,7 +58,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converter\AlgorithmConverter.cs" />
-    <Compile Include="Converter\BackNextConverter.cs" />
     <Compile Include="Converter\PlayButtonContentConverter.cs" />
     <Compile Include="Converter\RouteCostConverter.cs" />
     <Compile Include="Converter\RouteCostVisibilityConverter.cs" />
@@ -165,6 +164,9 @@
   <ItemGroup>
     <Resource Include="Sample Graphs\sample3.png" />
     <Resource Include="Sample Graphs\sample4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Sample Graphs\sample5.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

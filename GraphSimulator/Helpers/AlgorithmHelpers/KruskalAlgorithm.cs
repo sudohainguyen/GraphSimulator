@@ -11,12 +11,101 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
     {
         public IEnumerable<Route> ExtractStepsWithResult(Node startNode)
         {
-            throw new NotImplementedException();
+            var actions = Graph.Instance.Actions = new List<Action>();
+            var parents = new Dictionary<char, char>();
+            var rank = new Dictionary<char, int>();
+            foreach (var n in Graph.Instance.Nodes)
+            {
+                parents.Add(n.Key, n.Key);
+                rank.Add(n.Key, 0);
+            }
+            var queue = new Queue<Connection>(Graph.Instance.Connections.OrderBy(c => c.Cost));
+            var handledConnCount = 0;
+            while (handledConnCount < Graph.Instance.Nodes.Count - 1)
+            {
+                var con = queue.Dequeue();
+                actions.Add(() => con.ConnectionStatus = ConnectionStatus.IsInspecting);
+                var x = FindParent(parents, con.StartNode);
+                var y = FindParent(parents, con.DestNode);
+
+                if (x != y)
+                {
+                    Union(parents, rank, x, y);
+                    actions.Add(() =>
+                    {
+                        con.ConnectionStatus = ConnectionStatus.IsSelected;
+                        Graph.Instance.Nodes[x].NodeStatus = NodeStatus.Processed;
+                        Graph.Instance.Nodes[y].NodeStatus = NodeStatus.Processed;
+                    });
+                    handledConnCount++;
+                    yield return new Route(con);
+                }
+                else
+                {
+                    actions.Add(() => con.ConnectionStatus = ConnectionStatus.None);
+                }
+            }
         }
 
         public IEnumerable<Route> ShowResult(Node startNode)
         {
-            throw new NotImplementedException();
+            var parents = new Dictionary<char, char>();
+            var rank = new Dictionary<char, int>();
+            foreach (var n in Graph.Instance.Nodes)
+            {
+                parents.Add(n.Key, n.Key);
+                rank.Add(n.Key, 0);
+            }
+            var queue = new Queue<Connection>(Graph.Instance.Connections.OrderBy(c => c.Cost));
+            var handledConnCount = 0;
+            while (handledConnCount < Graph.Instance.Nodes.Count - 1)
+            {
+                var con = queue.Dequeue();
+                var x = FindParent(parents, con.StartNode);
+                var y = FindParent(parents, con.DestNode);
+
+                if (x != y)
+                {
+                    Union(parents, rank, x, y);
+                    con.ConnectionStatus = ConnectionStatus.IsSelected;
+                    Graph.Instance.Nodes[x].NodeStatus = NodeStatus.IsSelected;
+                    Graph.Instance.Nodes[y].NodeStatus = NodeStatus.IsSelected;
+                    handledConnCount++;
+                    yield return new Route(con);
+                }
+            }
+        }
+
+        private char FindParent(Dictionary<char,char> parents, char node)
+        {
+            if (parents[node].Equals(node))
+                return node;
+            return FindParent(parents, parents[node]);
+        }
+
+        private void Union(Dictionary<char, char> parents, Dictionary<char, int> rank, char x, char y)
+        {
+            var xp = FindParent(parents, x);
+            var yp = FindParent(parents, y);
+
+            if (rank[xp] < rank[yp])
+            {
+                parents[xp] = yp;
+            }
+            else if (rank[yp] < rank[xp])
+            {
+                parents[yp] = xp;
+            }
+            else
+            {
+                parents[yp] = xp;
+                rank[xp]++;
+            }
+        }
+        public bool CanRunWithGraph(Graph g, out string message)
+        {
+            message = "All nodes must be full connected to find minimum spanning tree";
+            return Graph.Instance.IsFullConnected;
         }
     }
 }
