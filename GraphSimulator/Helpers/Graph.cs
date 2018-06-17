@@ -29,6 +29,7 @@ namespace GraphSimulator.Helpers
         
         public List<Connection> Connections { get; set; } = new List<Connection>();
         public Dictionary<char, Node> Nodes { get; set; } = new Dictionary<char, Node>();
+        public List<Func<List<int>>> Action { get; set; }
         public List<Action> Actions { get; set; }
         public List<Dictionary<string, (string status, int? nodeValue)>> BackStack { get; set; }
 

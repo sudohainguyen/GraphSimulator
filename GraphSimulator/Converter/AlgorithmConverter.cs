@@ -9,7 +9,7 @@ namespace GraphSimulator.Converter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return 0;
+            return -1;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

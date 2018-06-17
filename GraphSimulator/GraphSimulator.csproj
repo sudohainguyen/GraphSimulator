@@ -59,9 +59,11 @@
     </ApplicationDefinition>
     <Compile Include="Converter\AlgorithmConverter.cs" />
     <Compile Include="Converter\PlayButtonContentConverter.cs" />
+    <Compile Include="Converter\PseudocodeConverter.cs" />
     <Compile Include="Converter\RouteCostConverter.cs" />
     <Compile Include="Converter\RouteCostVisibilityConverter.cs" />
     <Compile Include="Converter\RunModeConverter.cs" />
+    <Compile Include="Converter\StatusPanelWidthConverter.cs" />
     <Compile Include="Helpers\AlgorithmHelpers\BellmanFordAlgorithm.cs" />
     <Compile Include="Helpers\AlgorithmHelpers\DijsktraAlgorithm.cs" />
     <Compile Include="Helpers\AlgorithmHelpers\IAlgorithm.cs" />
@@ -87,6 +89,7 @@
     <Compile Include="User_Controls\Node.xaml.cs">
       <DependentUpon>Node.xaml</DependentUpon>
     </Compile>
+    <Compile Include="User_Controls\PseudoListBox.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

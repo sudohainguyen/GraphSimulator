@@ -714,4 +714,17 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="PseudoItem" TargetType="{x:Type us:PseudoListBoxItem}">
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True" >
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="Foreground" Value="#F9A825" />
+            </Trigger>
+        </Style.Triggers>
+        <Style.Resources>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                             Color="Transparent"/>
+        </Style.Resources>
+    </Style>
 </ResourceDictionary>

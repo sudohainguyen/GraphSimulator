@@ -24,6 +24,13 @@
                     <ResourceDictionary Source="./Styles/CustomTab.xaml"/>
                     <ResourceDictionary Source="./Styles/Icons.xaml"/>
                 </ResourceDictionary.MergedDictionaries>
+                
+                <converter:AlgorithmConverter x:Key="AlgoConverter"/>
+                <converter:RunModeConverter x:Key="RunModeConverter"/>
+                <converter:RouteCostConverter x:Key="RouteCostConverter"/>
+                <converter:StatusPanelWidthConverter x:Key="StatusPanelWidthConverter"/>
+                <converter:PseudocodeConverter x:Key="PseudocodeConverter"/>
+                <converter:PlayButtonContentConverter x:Key="PlayBtnConverter"/>
             </ResourceDictionary>
         </Grid.Resources>
         <TabControl Grid.Row="0" 
@@ -143,23 +150,22 @@
                 </TabItem.Header>
                 <StackPanel Orientation="Horizontal" 
                             Background="WhiteSmoke">
-                    <StackPanel.Resources>
-                        <converter:AlgorithmConverter x:Key="AlgoConverter"/>
-                    </StackPanel.Resources>
-                    <ComboBox VerticalAlignment="Center" 
-                              Width="150" 
-                              SelectedIndex="{Binding Algorithm, Converter={StaticResource AlgoConverter}}"
-                              Margin="10,0,30,0"
-                              Style="{StaticResource ComboBoxFlatStyle}">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Choose Algorithm"
+                                   Margin="10,0"
+                                   VerticalAlignment="Center" />
+                        <ComboBox Width="150" 
+                                  SelectedIndex="{Binding Algorithm, Converter={StaticResource AlgoConverter}}"
+                                  VerticalAlignment="Center"   
+                                  Margin="20,5,20,10"
+                                  Style="{StaticResource ComboBoxFlatStyle}">
                         <ComboBoxItem>Dijkstra's Algorithm</ComboBoxItem>
                         <ComboBoxItem>Bellman Ford (Not available)</ComboBoxItem>
                         <ComboBoxItem>Prim's Algorithm</ComboBoxItem>
                         <ComboBoxItem>Kruskal's Algorithm</ComboBoxItem>
                     </ComboBox>
+                    </StackPanel>
                     <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
-                        <StackPanel.Resources>
-                            <converter:RunModeConverter x:Key="RunModeConverter"/>
-                        </StackPanel.Resources>
                         <RadioButton Content="Only show the result" 
                                      IsChecked="{Binding RunMode, Converter={StaticResource RunModeConverter} , ConverterParameter=0}"
                                      Name="rbShowResult"
@@ -218,9 +224,6 @@
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center">
-                            <StackPanel.Resources>
-                                <converter:PlayButtonContentConverter x:Key="PlayBtnConverter"/>
-                            </StackPanel.Resources>
                             <StackPanel.Style>
                                 <Style TargetType="StackPanel">
                                     <Style.Triggers>
@@ -245,7 +248,6 @@
                                     </Rectangle>
                                 </Button.Content>
                             </Button>
-                            <!--Content="{Binding IsPause, Converter={StaticResource PlayBtnConverter}}"-->
                             <ToggleButton Width="40" 
                                           Name="btnPlay"
                                           IsChecked="{Binding IsPause}"
@@ -284,9 +286,36 @@
                 <TabItem.Header>
                     <TextBlock Text="About" Style="{StaticResource StyleHeaderText}"/>
                 </TabItem.Header>
-                <Grid>
-                    
-                </Grid>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <StackPanel VerticalAlignment="Center"
+                                Grid.Row="0" Grid.Column="1"
+                                Margin="20,0">
+                        <StackPanel.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+                            </Style>
+                        </StackPanel.Resources>
+                        <TextBlock Text="ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH"
+                                   FontSize="15" />
+                        <TextBlock Text="TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN"
+                                   FontSize="15" />
+                        <TextBlock Text="KHOA CÔNG NGHỆ PHẦN MỀM"
+                                   FontSize="15" />
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center"
+                                Margin="0,0,20,0">
+                        <TextBlock Text="Giảng viên hướng dẫn"/>
+                        <TextBlock Text="1. Cô Phan Nguyệt Minh"/>
+                        <TextBlock Text="2. Cô Huỳnh Hồ Thị Mộng Trinh"/>
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Nhóm thực hiện"/>
+                        <TextBlock Text="1. Nguyễn Quang Hải (15520187)"/>
+                        <TextBlock Text="2. Phan Thế Anh (15520027)"/>
+                        <TextBlock Text="3. Bùi Nguyễn Hoàng Anh (15520012)"/>
+                    </StackPanel>
+                </StackPanel>
             </TabItem>
         </TabControl>
         <Grid Grid.Row="1">
@@ -295,10 +324,13 @@
                 <ColumnDefinition Width="3" />
                 <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Margin="5,0,0,0">
-                <StackPanel.Resources>
-                    <converter:RouteCostConverter x:Key="RouteCostConverter"/>
-                </StackPanel.Resources>
+            <Grid Margin="5,0,0,0"
+                        Name="statusPanel">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
                 <DataGrid Name="dataGrid"
                           IsReadOnly="True"
                           ItemsSource="{Binding Routes}"
@@ -307,8 +339,7 @@
                           CanUserDeleteRows="False"
                           CanUserAddRows="False"
                           GridLinesVisibility="All"
-                          SelectionUnit="FullRow"
-                          Height="200">
+                          SelectionUnit="FullRow">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Node"
                                             Width="0.5*"
@@ -321,7 +352,23 @@
                                             Binding="{Binding RouteCost, Converter={StaticResource RouteCostConverter}}"/>
                     </DataGrid.Columns>
                 </DataGrid>
-            </StackPanel>
+                <TabControl HorizontalAlignment="Center"
+                            Grid.Row="2"
+                            Margin="0,0,0,5">
+                    <TabItem Header="Explaination"
+                             Width="{Binding ElementName=statusPanel,Path=ActualWidth,Converter={StaticResource StatusPanelWidthConverter}}">
+                        <TextBlock Text="This feature is not available right now"/>
+                    </TabItem>
+                    <TabItem Header="Pseudocode"
+                             IsSelected="True"
+                             Width="{Binding ElementName=statusPanel,Path=ActualWidth,Converter={StaticResource StatusPanelWidthConverter}}">
+                        <usercontrol:PseudoListBox ItemsSource="{Binding Algorithm, Converter={StaticResource PseudocodeConverter}}"
+                                                   SelectionMode="Multiple"
+                                                   ItemContainerStyle="{StaticResource PseudoItem}"
+                                                   x:Name="pseudoLbox"/>
+                    </TabItem>
+                </TabControl>
+            </Grid>
             <GridSplitter 
                 Grid.Column="1" 
                 Width="3" 

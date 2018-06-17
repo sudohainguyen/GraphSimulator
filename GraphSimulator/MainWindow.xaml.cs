@@ -16,6 +16,7 @@ using System.Windows.Threading;
 using GraphSimulator.Helpers.AlgorithmHelpers;
 using System.Windows.Media.Animation;
 using GraphSimulator.SubWindows;
+using System.Data;
 
 namespace GraphSimulator
 {
@@ -33,6 +34,7 @@ namespace GraphSimulator
         private bool _isPause = true;
         private bool _canEditGraph = true;
         private bool _isHide = true;
+        private IAlgorithm _algorithm = null;
 
         private DispatcherTimer _timer;
 
@@ -45,7 +47,15 @@ namespace GraphSimulator
 
         #region Properties
         public RunningMode RunMode { get; set; } = RunningMode.ShowTheResult;
-        public IAlgorithm Algorithm { get; set; } = new DijsktraAlgorithm();
+        public IAlgorithm Algorithm
+        {
+            get => _algorithm;
+            set
+            {
+                _algorithm = value;
+                OnPropertyChanged(nameof(Algorithm));
+            }
+        }
         public ObservableCollection<Route> Routes
         {
             get => _routes;
@@ -317,15 +327,14 @@ namespace GraphSimulator
             }
             if (Algorithm is PrimAlgorithm || Algorithm is KruskalAlgorithm && !Graph.Instance.IsUndirected)
             {
-                if (MessageBox.Show("To find MST, the graph must be converted to undirected graph. Agree ?", "Attention", 
-                                    MessageBoxButton.YesNo, 
-                                    MessageBoxImage.Question) 
+                if (MessageBox.Show("To find MST, the graph must be converted to undirected graph. Agree ?", "Attention",
+                                    MessageBoxButton.YesNo,
+                                    MessageBoxImage.Question)
                         == MessageBoxResult.No)
                     return;
                 Graph.Instance.ToUndirectedGraph();
             }
 
-            //Routes = new ObservableCollection<Route>();
             var root = selectedNodes.ElementAtOrDefault(0);
 
             switch (RunMode)
@@ -388,10 +397,10 @@ namespace GraphSimulator
 
         private void Button_Next_Click(object sender, RoutedEventArgs e)
         {
-            var actions = Graph.Instance.Actions;
+            var actions = Graph.Instance.Action;
             if (actions is null || actions.Count == 0)
                 return;
-            if (_curStep != Graph.Instance.Actions.Count - 1)
+            if (_curStep != actions.Count - 1)
             {
                 if (Graph.Instance.BackStack is null)
                     Graph.Instance.BackStack = new List<Dictionary<string, (string status, int? nodeValue)>>();
@@ -417,7 +426,12 @@ namespace GraphSimulator
                 btnNext.IsEnabled = false;
                 MessageBox.Show("Finished");
             }
-            Graph.Instance.Actions[_curStep]();
+            pseudoLbox.SelectedItems?.Clear();
+            foreach (var i in actions[_curStep]())
+            {
+                var Row = pseudoLbox.Items[i];
+                pseudoLbox.SelectedItems.Add(Row);
+            }
         }
 
         private void Button_Play_Click(object sender, RoutedEventArgs e)
@@ -554,7 +568,6 @@ namespace GraphSimulator
 
             ResetWorkspace();
             coveringPanel.Visibility = Visibility.Collapsed;
-            //GraphContainer.IsEnabled = true;
 
             foreach (var n in nodesdata)
             {
@@ -585,15 +598,15 @@ namespace GraphSimulator
             Graph.Instance.Connections.Clear();
             Graph.Instance.Nodes.Clear();
             GraphContainer.Children.Clear();
-            dataGrid.Items.Clear();
+            Routes?.Clear();
             _startNode = null;
         }
 
         private void ResetGraphStatus()
         {
-            if (Graph.Instance.Actions is null)
+            if (Graph.Instance.Action is null)
                 return;
-            Graph.Instance.Actions.Clear();
+            Graph.Instance.Action.Clear();
             foreach (var item in GraphContainer.Children)
             {
                 if (item is Node n)
@@ -605,7 +618,7 @@ namespace GraphSimulator
                 {
                     c.ConnectionStatus = ConnectionStatus.None;
                 }
-                dataGrid.Items.Clear();
+                Routes.Clear();
             }
         }
 
@@ -727,14 +740,45 @@ namespace GraphSimulator
 
         private void Tick(object obj, EventArgs e)
         {
-            _curStep++;
-            Graph.Instance.Actions[_curStep]();
-            if (_curStep.Equals(Graph.Instance.Actions.Count - 1))
+            if (_curStep != Graph.Instance.Action.Count - 1)
             {
+                if (Graph.Instance.BackStack is null)
+                    Graph.Instance.BackStack = new List<Dictionary<string, (string status, int? nodeValue)>>();
+                var stack = Graph.Instance.BackStack;
+                if (_curStep == stack.Count)
+                {
+                    var curElementsStatus = new Dictionary<string, (string status, int? nodeValue)>();
+                    foreach (var element in GraphContainer.Children)
+                    {
+                        if (element is Node n)
+                            curElementsStatus.Add(n.Identity.ToString(), (n.NodeStatus.ToString(), n.RouteCost));
+                        else if (element is Connection c)
+                            curElementsStatus.Add(c.Identity, (c.ConnectionStatus.ToString(), null));
+                    }
+                    stack.Add(curElementsStatus);
+                }
+                if (!btnBack.IsEnabled)
+                    btnBack.IsEnabled = true;
+                _curStep++;
+            }
+            else
+            {
+                btnNext.IsEnabled = false;
                 _timer.Tick -= Tick;
                 _timer.Stop();
                 IsPause = true;
                 MessageBox.Show("Finished");
+            }
+            HighlightPseudocode(Graph.Instance.Action[_curStep]());
+        }
+
+        private void HighlightPseudocode(IEnumerable<int> rows)
+        {
+            pseudoLbox.SelectedItems?.Clear();
+            foreach (var i in rows)
+            {
+                var Row = pseudoLbox.Items[i];
+                pseudoLbox.SelectedItems.Add(Row);
             }
         }
 

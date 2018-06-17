@@ -10,6 +10,26 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
 {
     public class DijsktraAlgorithm : IAlgorithm
     {
+        public List<string> Pseudocode =>
+            new List<string>
+            {
+                "BEGIN",
+                "  FOR i = 0,.., n-1 DO",
+                "    d(v[i]) ← ∞",
+                "  d(v[root]) ← 0",
+                "  queue.insert(root, 0)",
+                "  WHILE queue ≠ ∅ DO",
+                "    u = queue.extractMin()",
+                "    FOR ALL (u,w) ∈ E DO",
+                "      dist ← d(u) + l(u,w)",
+                "      IF d(w) > dist DO",
+                "        IF w ∉ queue",
+                "          queue.insert(w,dist)",
+                "        d(w) = dist",
+                "",
+                "END"
+            };
+
         public IEnumerable<Route> ShowResult(Node startNode)
         {
             var shortestPaths = Helper.InitSetForDijsktra(startNode.Identity, Graph.Instance.Nodes.Select(p => p.Key));         // Initialisation
@@ -64,29 +84,33 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
 
         public IEnumerable<Route> ExtractStepsWithResult(Node startNode)
         {
-            Graph.Instance.Actions = new List<Action>();
+            var actions = Graph.Instance.Action = new List<Func<List<int>>>
+            {
+                () => new List<int>{ 0 }
+            };
+            var nodes = Graph.Instance.Nodes;
 
-            var shortestPaths = Helper.InitSetForDijsktra(startNode.Identity, Graph.Instance.Nodes.Select(p => p.Key));
+            var shortestPaths = Helper.InitSetForDijsktra(startNode.Identity, nodes.Select(p => p.Key));
 
             var queue = new Queue<char>();
             queue.Enqueue(startNode.Identity);
 
             var handledNodes = new List<char>();
 
-            Graph.Instance.Actions.Add(() =>
+            actions.Add(() =>
             {
-                foreach (var item in Graph.Instance.Nodes.Where(p => p.Key != startNode.Identity).Select(p => p.Value))
+                foreach (var item in nodes.Where(p => p.Key != startNode.Identity).Select(p => p.Value))
                 {
                     item.RouteCost = int.MaxValue;
                 }
                 startNode.RouteCost = 0;
                 startNode.NodeStatus = NodeStatus.IsSelected;
-                //var temp = new List<Route>(shortestPaths.Values);
-                //action(temp);
+                return new List<int> { 1, 2, 3, 4 };
             });
 
             while (queue.Count != 0)
             {
+                actions.Add(() => new List<int> { 5 });
                 if (queue.Count > 1)
                 {
                     queue = new Queue<char>(shortestPaths.Where(pair => queue.Contains(pair.Key))
@@ -95,14 +119,22 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
                 }
                 var nodeToProcess = queue.Dequeue();
 
-                Graph.Instance.Actions.Add(() => Graph.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.IsBeingProcessed);
+                actions.Add(() =>
+                {
+                    nodes[nodeToProcess].NodeStatus = NodeStatus.IsBeingProcessed;
+                    return new List<int> { 6 };
+                });
 
                 var neighbors = Graph.Instance.Connections
                     .Where(c => c.StartNode == nodeToProcess || (c.DestNode == nodeToProcess && c.IsTwoWay));
 
                 foreach (var item in neighbors)
                 {
-                    Graph.Instance.Actions.Add(() => item.ConnectionStatus = ConnectionStatus.IsInspecting);
+                    actions.Add(() =>
+                    {
+                        item.ConnectionStatus = ConnectionStatus.IsInspecting;
+                        return new List<int> { 7, 8 };
+                    });
 
                     var curNeighboringNode = item.DestNode;
                     var route = shortestPaths[curNeighboringNode];
@@ -117,12 +149,15 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
 
                         if (!handledNodes.Contains(curNeighboringNode) && !queue.Contains(curNeighboringNode))
                         {
-
-                            Graph.Instance.Actions.Add(() => Graph.Instance.Nodes[curNeighboringNode].NodeStatus = NodeStatus.IsInQueue);
+                            actions.Add(() =>
+                            {
+                                nodes[curNeighboringNode].NodeStatus = NodeStatus.IsInQueue;
+                                return new List<int> { 10, 11 };
+                            });
                             queue.Enqueue(curNeighboringNode);
                         }
                         var temp = new List<Connection>(route.Paths);
-                        Graph.Instance.Actions.Add(() =>
+                        actions.Add(() =>
                         {
                             var cost = 0;
                             foreach (var conn in temp1)
@@ -136,18 +171,26 @@ namespace GraphSimulator.Helpers.AlgorithmHelpers
                                                           .ConnectionStatus = ConnectionStatus.IsSelected;
                                 cost += conn.Cost;
                             }
-                            Graph.Instance.Nodes[curNeighboringNode].RouteCost = cost;
-                            //var temp2 = new List<Route>(shortestPaths.Values);
-                            //action(temp2);
+                            nodes[curNeighboringNode].RouteCost = cost;
+                            return new List<int> { 12 };
                         });
                     }
                     else
                     {
-                        Graph.Instance.Actions.Add(() => item.ConnectionStatus = ConnectionStatus.None);
+                        actions.Add(() =>
+                        {
+                            item.ConnectionStatus = ConnectionStatus.None;
+                            return new List<int> { 13 };
+                        });
                     }
                 }
                 handledNodes.Add(nodeToProcess);
-                Graph.Instance.Actions.Add(() => Graph.Instance.Nodes[nodeToProcess].NodeStatus = NodeStatus.Processed);
+                var quit = queue.Count == 0;
+                actions.Add(() =>
+                {
+                    nodes[nodeToProcess].NodeStatus = NodeStatus.Processed;
+                    return quit ? new List<int> { 14 } : new List<int> { 5 };
+                });
             }
 
             return shortestPaths.Values;
