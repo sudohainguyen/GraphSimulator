@@ -8,7 +8,7 @@
         xmlns:usercontrol="clr-namespace:GraphSimulator.User_Controls"
         xmlns:converter="clr-namespace:GraphSimulator.Converter"
         mc:Ignorable="d"
-        Title="MainWindow" Height="700" Width="1000"
+        Title="Graph Simulator" Height="700" Width="1000"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
         ResizeMode="CanResize">
@@ -41,9 +41,16 @@
                 <TabItem.Header>
                     <TextBlock Text="Create graph" Style="{StaticResource StyleHeaderText}"/>
                 </TabItem.Header>
-                <StackPanel Orientation="Horizontal" 
-                            Background="WhiteSmoke">
-                    <Button 
+                <Grid Background="WhiteSmoke">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="1.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
                             Click="Button_New_Click"
                             Width="120"
                             Margin="30,10,10,10"
@@ -85,7 +92,8 @@
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Width="120"
+                    <Button Grid.Column="2" 
+                            Width="120"
                             Margin="10,10"
                             Style="{StaticResource NiceButton}"
                             Click="Button_Load_Click">
@@ -105,7 +113,8 @@
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Width="120"
+                    <Button Grid.Column="3"
+                            Width="120"
                             Margin="10,10"
                             Style="{StaticResource NiceButton}"
                             Name="btnSave"
@@ -126,14 +135,13 @@
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <StackPanel VerticalAlignment="Stretch"
+                    <StackPanel Grid.Column="4" VerticalAlignment="Stretch"
                                 Width="Auto" Margin="10,10,10,5">
                         <TextBlock Text="Add connection"
                                    FontWeight="DemiBold"
                                    FontSize="13"/>
                         <ToggleButton 
                             Style="{StaticResource ToggleButtonStyle}"
-                            Grid.Column="3"
                             Width="120"
                             HorizontalAlignment="Center"
                             IsChecked="{Binding IsCreatingConnection}"
@@ -142,7 +150,11 @@
                                   Style="{StaticResource CheckBoxStyle}"
                                   IsChecked="{Binding IsRandomCost}"/>
                     </StackPanel>
-                </StackPanel>
+                    <Grid Grid.Column="5" HorizontalAlignment="Right">
+                        <Image Source="./Styles/logo.png" Height="50"
+                               Margin="0,0,25,0"/>
+                    </Grid>
+                </Grid>
             </TabItem>
             <TabItem Style="{StaticResource StyleTabItemDefault}">
                 <TabItem.Header>
@@ -290,7 +302,7 @@
                             HorizontalAlignment="Center">
                     <StackPanel VerticalAlignment="Center"
                                 Grid.Row="0" Grid.Column="1"
-                                Margin="20,0">
+                                Margin="20,0,0,0">
                         <StackPanel.Resources>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"></Setter>
@@ -302,6 +314,11 @@
                                    FontSize="15" />
                         <TextBlock Text="KHOA CÔNG NGHỆ PHẦN MỀM"
                                    FontSize="15" />
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center"
+                                Margin="20,0">
+                        <Image Source="./Styles/logo.png"/>
+                        <TextBlock Text="GRAPH SIMULATOR"/>
                     </StackPanel>
                     <StackPanel VerticalAlignment="Center"
                                 Margin="0,0,20,0">
@@ -357,7 +374,7 @@
                             Margin="0,0,0,5">
                     <TabItem Header="Explaination"
                              Width="{Binding ElementName=statusPanel,Path=ActualWidth,Converter={StaticResource StatusPanelWidthConverter}}">
-                        <TextBlock Text="This feature is not available right now"/>
+                        <TextBlock Text="This feature is not available currently"/>
                     </TabItem>
                     <TabItem Header="Pseudocode"
                              IsSelected="True"
